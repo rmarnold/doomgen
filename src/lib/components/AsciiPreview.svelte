@@ -4,6 +4,8 @@
   import { applyDrip, applyDistress } from '$lib/engine/effects';
   import { appState } from '$lib/stores/state.svelte';
   import { getPaletteById } from '$lib/theme/palettes';
+  import gsap from 'gsap';
+  import { tick } from 'svelte';
 
   let asciiResult = $state<RenderResult | null>(null);
   let coloredLines = $state<ColoredLine[]>([]);
@@ -64,6 +66,26 @@
     }
 
     coloredLines = lines;
+  });
+
+  // After coloredLines updates, animate new spans
+  $effect(() => {
+    if (coloredLines.length > 0 && appState.animationsEnabled) {
+      tick().then(() => {
+        if (!previewEl) return;
+        const spans = previewEl.querySelectorAll('pre span');
+        gsap.fromTo(
+          spans,
+          { opacity: 0 },
+          {
+            opacity: 1,
+            duration: 0.02,
+            stagger: 0.001,
+            ease: 'none',
+          }
+        );
+      });
+    }
   });
 
   export function getPreviewElement(): HTMLDivElement {
