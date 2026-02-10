@@ -73,9 +73,9 @@
 <div class="flex flex-wrap items-center gap-3">
   <button class={btnClass} onclick={handleCopyText}>Copy Text</button>
   <button class={btnClass} onclick={handleDownloadPng} disabled={!previewElement}>PNG</button>
-  <button class="{btnClass} hidden sm:inline-flex" onclick={handleCopyImage} disabled={!previewElement}>Copy Image</button>
-  <button class="{btnClass} hidden sm:inline-flex" onclick={handleDownloadSvg}>SVG</button>
-  <button class="{btnClass} hidden sm:inline-flex" onclick={handleDownloadAnsi}>ANSI</button>
+  <button class={btnClass} onclick={handleCopyImage} disabled={!previewElement}>Copy Image</button>
+  <button class={btnClass} onclick={handleDownloadSvg}>SVG</button>
+  <button class={btnClass} onclick={handleDownloadAnsi}>ANSI</button>
 
   {#if feedback}
     <span class="text-sm text-doom-green">{feedback}</span>

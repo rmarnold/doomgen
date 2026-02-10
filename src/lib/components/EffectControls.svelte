@@ -41,39 +41,42 @@
     </div>
   </div>
 
-  <!-- Glow -->
-  <label class="block">
-    <span class="mb-0.5 flex justify-between text-[0.65rem] uppercase tracking-[0.15em] text-doom-text-muted" style="font-family: var(--font-doom-ui)">
-      <span>Glow</span>
-      <span class="font-mono normal-case tracking-normal">{appState.glowIntensity}%</span>
-    </span>
-    <input type="range" min="0" max="100" value={appState.glowIntensity} oninput={onGlow} />
-  </label>
+  <!-- Sliders Grid -->
+  <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+    <!-- Glow -->
+    <label class="block">
+      <span class="mb-0.5 flex justify-between text-[0.65rem] uppercase tracking-[0.15em] text-doom-text-muted" style="font-family: var(--font-doom-ui)">
+        <span>Glow</span>
+        <span class="font-mono normal-case tracking-normal">{appState.glowIntensity}%</span>
+      </span>
+      <input type="range" min="0" max="100" value={appState.glowIntensity} oninput={onGlow} />
+    </label>
 
-  <!-- Drip -->
-  <label class="block">
-    <span class="mb-0.5 flex justify-between text-[0.65rem] uppercase tracking-[0.15em] text-doom-text-muted" style="font-family: var(--font-doom-ui)">
-      <span>Drip</span>
-      <span class="font-mono normal-case tracking-normal">{appState.dripDensity}%</span>
-    </span>
-    <input type="range" min="0" max="100" value={appState.dripDensity} oninput={onDrip} />
-  </label>
+    <!-- Drip -->
+    <label class="block">
+      <span class="mb-0.5 flex justify-between text-[0.65rem] uppercase tracking-[0.15em] text-doom-text-muted" style="font-family: var(--font-doom-ui)">
+        <span>Drip</span>
+        <span class="font-mono normal-case tracking-normal">{appState.dripDensity}%</span>
+      </span>
+      <input type="range" min="0" max="100" value={appState.dripDensity} oninput={onDrip} />
+    </label>
 
-  <!-- Shadow -->
-  <label class="block">
-    <span class="mb-0.5 flex justify-between text-[0.65rem] uppercase tracking-[0.15em] text-doom-text-muted" style="font-family: var(--font-doom-ui)">
-      <span>Shadow</span>
-      <span class="font-mono normal-case tracking-normal">{appState.shadowOffset}px</span>
-    </span>
-    <input type="range" min="0" max="6" value={appState.shadowOffset} oninput={onShadow} />
-  </label>
+    <!-- Shadow -->
+    <label class="block">
+      <span class="mb-0.5 flex justify-between text-[0.65rem] uppercase tracking-[0.15em] text-doom-text-muted" style="font-family: var(--font-doom-ui)">
+        <span>Shadow</span>
+        <span class="font-mono normal-case tracking-normal">{appState.shadowOffset}px</span>
+      </span>
+      <input type="range" min="0" max="6" value={appState.shadowOffset} oninput={onShadow} />
+    </label>
 
-  <!-- Distress -->
-  <label class="block">
-    <span class="mb-0.5 flex justify-between text-[0.65rem] uppercase tracking-[0.15em] text-doom-text-muted" style="font-family: var(--font-doom-ui)">
-      <span>Distress</span>
-      <span class="font-mono normal-case tracking-normal">{appState.distressIntensity}%</span>
-    </span>
-    <input type="range" min="0" max="50" value={appState.distressIntensity} oninput={onDistress} />
-  </label>
+    <!-- Distress -->
+    <label class="block">
+      <span class="mb-0.5 flex justify-between text-[0.65rem] uppercase tracking-[0.15em] text-doom-text-muted" style="font-family: var(--font-doom-ui)">
+        <span>Distress</span>
+        <span class="font-mono normal-case tracking-normal">{appState.distressIntensity}%</span>
+      </span>
+      <input type="range" min="0" max="50" value={appState.distressIntensity} oninput={onDistress} />
+    </label>
+  </div>
 </div>

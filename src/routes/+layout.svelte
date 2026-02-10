@@ -13,10 +13,12 @@
 
     // Stagger entrance animations
     const header = container.querySelector('[data-anim="header"]');
+    const input = container.querySelector('[data-anim="input"]');
+    const style = container.querySelector('[data-anim="style"]');
     const preview = container.querySelector('[data-anim="preview"]');
-    const sidebar = container.querySelector('[data-anim="sidebar"]');
+    const exportSection = container.querySelector('[data-anim="export"]');
 
-    const targets = [header, preview, sidebar].filter(Boolean);
+    const targets = [header, input, style, preview, exportSection].filter(Boolean);
     if (targets.length > 0) {
       gsap.from(targets, {
         opacity: 0,
@@ -35,6 +37,6 @@
   });
 </script>
 
-<div bind:this={container} class="vignette h-screen overflow-hidden bg-doom-black font-mono text-doom-text">
+<div bind:this={container} class="min-h-screen bg-doom-black font-mono text-doom-text">
   {@render children()}
 </div>

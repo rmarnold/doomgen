@@ -129,7 +129,7 @@
 
 <div
   bind:this={previewEl}
-  class="scanlines metal-panel-inset preview-glow-border relative flex h-full min-h-[200px] flex-col overflow-auto p-6"
+  class="scanlines metal-panel-inset preview-glow-border relative flex min-h-[250px] flex-col overflow-auto p-6 sm:min-h-[350px]"
 >
   {#if loading}
     <p class="animate-pulse text-doom-text-muted">Rendering...</p>
