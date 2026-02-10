@@ -67,7 +67,7 @@
   </header>
 
   <!-- INPUT Section -->
-  <section data-anim="input" class="metal-panel p-4">
+  <section data-anim="input" class="metal-panel relative z-20 p-4">
     <h2 class="mb-3 text-[0.65rem] uppercase tracking-[0.2em] text-doom-text-muted" style="font-family: var(--font-doom-ui)">Input</h2>
     <div class="space-y-3">
       <input
