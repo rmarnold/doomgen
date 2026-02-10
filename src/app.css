@@ -1,0 +1,80 @@
+@import "tailwindcss";
+
+@theme {
+  /* Backgrounds */
+  --color-doom-black: oklch(0.10 0.00 0);
+  --color-doom-dark: oklch(0.15 0.01 30);
+  --color-doom-surface: oklch(0.20 0.02 30);
+
+  /* Primary Accents */
+  --color-doom-red: oklch(0.60 0.25 25);
+  --color-doom-glow: oklch(0.65 0.28 25);
+  --color-doom-fire: oklch(0.70 0.20 55);
+  --color-doom-yellow: oklch(0.85 0.18 90);
+
+  /* Status */
+  --color-doom-green: oklch(0.65 0.20 145);
+  --color-doom-blue: oklch(0.55 0.20 260);
+
+  /* Text */
+  --color-doom-text: oklch(0.90 0.01 90);
+  --color-doom-text-muted: oklch(0.55 0.01 90);
+
+  /* Font Families */
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+}
+
+/* ── Global Resets ────────────────────────────── */
+html {
+  background-color: var(--color-doom-black);
+  color: var(--color-doom-text);
+}
+
+/* ── Signature CSS Effects ────────────────────── */
+
+.doom-glow {
+  text-shadow:
+    0 0 7px var(--color-doom-glow),
+    0 0 10px var(--color-doom-glow),
+    0 0 21px var(--color-doom-glow),
+    0 0 42px var(--color-doom-red),
+    0 0 82px var(--color-doom-red);
+}
+
+.metal-text {
+  background: linear-gradient(180deg,
+    #BAC7C4 0%, #7f7f7f 30%, #3b3b3b 50%,
+    #cb5e29 70%, #874307 100%
+  );
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.scanlines::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(0, 0, 0, 0.15),
+    rgba(0, 0, 0, 0.15) 1px,
+    transparent 1px,
+    transparent 2px
+  );
+  pointer-events: none;
+  z-index: 10;
+}
+
+.vignette::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(
+    ellipse at center,
+    transparent 60%,
+    rgba(0, 0, 0, 0.6) 100%
+  );
+  pointer-events: none;
+  z-index: 50;
+}
