@@ -1,7 +1,22 @@
 import figlet from 'figlet';
-import type { FontMeta } from '$lib/theme/fonts';
 
 const loadedFonts = new Set<string>();
+
+// Static import map so Vite can bundle each font as a lazy chunk
+const fontImports: Record<string, () => Promise<{ default: string }>> = {
+  'Doom': () => import('figlet/importable-fonts/Doom.js'),
+  'ANSI Shadow': () => import('figlet/importable-fonts/ANSI Shadow.js'),
+  'Bloody': () => import('figlet/importable-fonts/Bloody.js'),
+  'Gothic': () => import('figlet/importable-fonts/Gothic.js'),
+  '3-D': () => import('figlet/importable-fonts/3-D.js'),
+  'Block': () => import('figlet/importable-fonts/Block.js'),
+  'Banner3-D': () => import('figlet/importable-fonts/Banner3-D.js'),
+  'Poison': () => import('figlet/importable-fonts/Poison.js'),
+  'Ghost': () => import('figlet/importable-fonts/Ghost.js'),
+  'Graffiti': () => import('figlet/importable-fonts/Graffiti.js'),
+  'Alligator': () => import('figlet/importable-fonts/Alligator.js'),
+  'Isometric1': () => import('figlet/importable-fonts/Isometric1.js'),
+};
 
 /**
  * Dynamically import and register a FIGlet font.
@@ -10,11 +25,10 @@ const loadedFonts = new Set<string>();
 async function loadFont(fontId: string): Promise<void> {
   if (loadedFonts.has(fontId)) return;
 
-  // Dynamic import from figlet's importable-fonts
-  const fontModule = await import(
-    /* @vite-ignore */
-    `figlet/importable-fonts/${fontId}.js`
-  );
+  const loader = fontImports[fontId];
+  if (!loader) throw new Error(`Unknown font: ${fontId}`);
+
+  const fontModule = await loader();
   figlet.parseFont(fontId, fontModule.default);
   loadedFonts.add(fontId);
 }
