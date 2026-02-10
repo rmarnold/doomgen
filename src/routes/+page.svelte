@@ -1,6 +1,7 @@
 <script lang="ts">
-  // Placeholder state — will be replaced with stores in Task 9
-  let text = $state('DOOM');
+  import AsciiPreview from '$lib/components/AsciiPreview.svelte';
+  import { appState } from '$lib/stores/state.svelte';
+  import { DOOM_FONTS } from '$lib/theme/fonts';
 </script>
 
 <svelte:head>
@@ -27,11 +28,8 @@
   </header>
 
   <!-- Preview Area -->
-  <section class="scanlines relative mb-6 flex-1 overflow-auto rounded-lg border border-doom-surface bg-doom-dark p-6">
-    <pre class="font-mono text-sm leading-tight text-doom-text">
-      <!-- ASCII preview will render here -->
-      <span class="doom-glow text-doom-red">PLACEHOLDER — figlet output goes here</span>
-    </pre>
+  <section class="mb-6 flex-1">
+    <AsciiPreview />
   </section>
 
   <!-- Controls -->
@@ -40,30 +38,69 @@
     <!-- Input Controls -->
     <div class="space-y-4 rounded-lg border border-doom-surface bg-doom-dark p-4">
       <h2 class="text-sm font-bold uppercase tracking-widest text-doom-text-muted">Input</h2>
+
       <label class="block">
         <span class="mb-1 block text-sm text-doom-text-muted">Text</span>
         <input
           type="text"
-          bind:value={text}
+          bind:value={appState.text}
           placeholder="Enter text..."
+          maxlength="30"
           class="w-full rounded border border-doom-surface bg-doom-black px-3 py-2 font-mono text-doom-text placeholder-doom-text-muted focus:border-doom-red focus:outline-none"
         />
       </label>
-      <!-- Font and Layout selectors will be added in Phase 2 -->
+
+      <label class="block">
+        <span class="mb-1 block text-sm text-doom-text-muted">Font</span>
+        <select
+          bind:value={appState.fontId}
+          class="w-full rounded border border-doom-surface bg-doom-black px-3 py-2 font-mono text-doom-text focus:border-doom-red focus:outline-none"
+        >
+          {#each DOOM_FONTS as font}
+            <option value={font.id}>{font.label} — {font.description}</option>
+          {/each}
+        </select>
+      </label>
+
+      <label class="block">
+        <span class="mb-1 block text-sm text-doom-text-muted">Layout</span>
+        <select
+          bind:value={appState.layout}
+          class="w-full rounded border border-doom-surface bg-doom-black px-3 py-2 font-mono text-doom-text focus:border-doom-red focus:outline-none"
+        >
+          <option value="default">Default</option>
+          <option value="full">Full</option>
+          <option value="fitted">Fitted</option>
+        </select>
+      </label>
     </div>
 
     <!-- Style Controls -->
     <div class="space-y-4 rounded-lg border border-doom-surface bg-doom-dark p-4">
       <h2 class="text-sm font-bold uppercase tracking-widest text-doom-text-muted">Style</h2>
-      <!-- Palette, Glow, Drip, Shadow, Distress controls will be added in Phase 3 -->
-      <p class="text-sm text-doom-text-muted">Style controls coming in Phase 3...</p>
+
+      <label class="block">
+        <span class="mb-1 flex justify-between text-sm text-doom-text-muted">
+          <span>Glow</span>
+          <span>{appState.glowIntensity}%</span>
+        </span>
+        <input
+          type="range"
+          min="0"
+          max="100"
+          bind:value={appState.glowIntensity}
+          class="w-full accent-doom-red"
+        />
+      </label>
+
+      <!-- Palette, Direction, Drip, Shadow, Distress controls will be added in Phase 3 -->
+      <p class="text-sm text-doom-text-muted">More style controls coming in Phase 3...</p>
     </div>
 
   </section>
 
   <!-- Export Bar -->
   <footer class="flex flex-wrap gap-3 rounded-lg border border-doom-surface bg-doom-dark p-4">
-    <!-- Export buttons will be added in Phase 4 -->
     <span class="text-sm text-doom-text-muted">Export options coming in Phase 4...</span>
   </footer>
 
