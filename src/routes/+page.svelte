@@ -1,4 +1,70 @@
-<main class="flex min-h-screen flex-col items-center justify-center">
-  <h1 class="metal-text text-6xl font-bold">DOOMGEN</h1>
-  <p class="mt-4 text-doom-text-muted">ASCII Art Logo Generator</p>
-</main>
+<script lang="ts">
+  // Placeholder state — will be replaced with stores in Task 9
+  let text = $state('DOOM');
+</script>
+
+<svelte:head>
+  <title>DOOMGEN — ASCII Art Logo Generator</title>
+  <meta name="description" content="Generate DOOM-styled ASCII art logos with color gradients, glow effects, and multiple export formats." />
+</svelte:head>
+
+<div class="mx-auto flex min-h-screen max-w-6xl flex-col px-4 py-6">
+
+  <!-- Header -->
+  <header class="flex items-center justify-between pb-6">
+    <h1 class="metal-text text-4xl font-bold tracking-wider sm:text-5xl">DOOMGEN</h1>
+    <a
+      href="https://github.com/rarnold/doomgen"
+      target="_blank"
+      rel="noopener noreferrer"
+      class="text-doom-text-muted transition-colors hover:text-doom-glow"
+      aria-label="View on GitHub"
+    >
+      <svg class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
+        <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
+      </svg>
+    </a>
+  </header>
+
+  <!-- Preview Area -->
+  <section class="scanlines relative mb-6 flex-1 overflow-auto rounded-lg border border-doom-surface bg-doom-dark p-6">
+    <pre class="font-mono text-sm leading-tight text-doom-text">
+      <!-- ASCII preview will render here -->
+      <span class="doom-glow text-doom-red">PLACEHOLDER — figlet output goes here</span>
+    </pre>
+  </section>
+
+  <!-- Controls -->
+  <section class="mb-6 grid grid-cols-1 gap-6 md:grid-cols-2">
+
+    <!-- Input Controls -->
+    <div class="space-y-4 rounded-lg border border-doom-surface bg-doom-dark p-4">
+      <h2 class="text-sm font-bold uppercase tracking-widest text-doom-text-muted">Input</h2>
+      <label class="block">
+        <span class="mb-1 block text-sm text-doom-text-muted">Text</span>
+        <input
+          type="text"
+          bind:value={text}
+          placeholder="Enter text..."
+          class="w-full rounded border border-doom-surface bg-doom-black px-3 py-2 font-mono text-doom-text placeholder-doom-text-muted focus:border-doom-red focus:outline-none"
+        />
+      </label>
+      <!-- Font and Layout selectors will be added in Phase 2 -->
+    </div>
+
+    <!-- Style Controls -->
+    <div class="space-y-4 rounded-lg border border-doom-surface bg-doom-dark p-4">
+      <h2 class="text-sm font-bold uppercase tracking-widest text-doom-text-muted">Style</h2>
+      <!-- Palette, Glow, Drip, Shadow, Distress controls will be added in Phase 3 -->
+      <p class="text-sm text-doom-text-muted">Style controls coming in Phase 3...</p>
+    </div>
+
+  </section>
+
+  <!-- Export Bar -->
+  <footer class="flex flex-wrap gap-3 rounded-lg border border-doom-surface bg-doom-dark p-4">
+    <!-- Export buttons will be added in Phase 4 -->
+    <span class="text-sm text-doom-text-muted">Export options coming in Phase 4...</span>
+  </footer>
+
+</div>
