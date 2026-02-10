@@ -11,6 +11,7 @@
 
   let { asciiLines, coloredLines, previewElement, filename }: Props = $props();
 
+  let transparentBg = $state(false);
   let feedback = $state<string | null>(null);
   let feedbackTimer: ReturnType<typeof setTimeout>;
 
@@ -32,7 +33,7 @@
   async function handleCopyImage() {
     if (!previewElement) return;
     try {
-      await copyImage(previewElement);
+      await copyImage(previewElement, { transparentBg });
       showFeedback('Image copied!');
     } catch {
       showFeedback('Copy failed');
@@ -42,7 +43,7 @@
   async function handleDownloadPng() {
     if (!previewElement) return;
     try {
-      await downloadPng(previewElement, filename);
+      await downloadPng(previewElement, filename, { transparentBg });
       showFeedback('PNG downloaded!');
     } catch {
       showFeedback('Download failed');
@@ -81,6 +82,14 @@
 
 <div class="flex flex-wrap items-center gap-3">
   <button class={btnClass} onclick={handleCopyText}>Copy Text</button>
+  <label class="flex items-center gap-1.5 text-sm font-mono text-doom-text-muted cursor-pointer select-none">
+    <input
+      type="checkbox"
+      bind:checked={transparentBg}
+      class="accent-doom-red w-3.5 h-3.5 cursor-pointer"
+    />
+    Transparent
+  </label>
   <button class={btnClass} onclick={handleDownloadPng} disabled={!previewElement}>PNG</button>
   <button class={btnClass} onclick={handleCopyImage} disabled={!previewElement}>Copy Image</button>
   <button class={btnClass} onclick={handleDownloadSvg}>SVG</button>

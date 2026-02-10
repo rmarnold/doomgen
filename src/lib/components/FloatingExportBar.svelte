@@ -11,6 +11,7 @@
 
   let { asciiLines, coloredLines, previewElement, filename }: Props = $props();
 
+  let transparentBg = $state(false);
   let showSuccess = $state(false);
   let successTimer: ReturnType<typeof setTimeout>;
 
@@ -32,7 +33,7 @@
   async function handleCopyImage() {
     if (!previewElement) return;
     try {
-      await copyImage(previewElement);
+      await copyImage(previewElement, { transparentBg });
       showFeedback();
     } catch {
       // Silent failure for floating bar
@@ -42,7 +43,7 @@
   async function handleDownloadPng() {
     if (!previewElement) return;
     try {
-      await downloadPng(previewElement, filename);
+      await downloadPng(previewElement, filename, { transparentBg });
       showFeedback();
     } catch {
       // Silent failure for floating bar
@@ -79,6 +80,27 @@
 
 <!-- Floating Export Bar (Desktop Only) -->
 <div class="absolute top-2 right-2 hidden sm:flex gap-1.5 items-center z-10">
+  <!-- Transparent Background Toggle -->
+  <button
+    class="doom-btn p-1.5 {transparentBg ? 'text-doom-green border-doom-green' : ''}"
+    onclick={() => (transparentBg = !transparentBg)}
+    title={transparentBg ? 'Transparent Background: ON' : 'Transparent Background: OFF'}
+    aria-label="Toggle Transparent Background"
+    aria-pressed={transparentBg}
+  >
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+      <rect x="1" y="1" width="14" height="14" rx="1" stroke="currentColor" stroke-width="1.5" fill="none" />
+      <rect x="1" y="1" width="3.5" height="3.5" fill="currentColor" opacity="0.5" />
+      <rect x="8" y="1" width="3.5" height="3.5" fill="currentColor" opacity="0.5" />
+      <rect x="4.5" y="4.5" width="3.5" height="3.5" fill="currentColor" opacity="0.5" />
+      <rect x="11.5" y="4.5" width="3.5" height="3.5" fill="currentColor" opacity="0.5" />
+      <rect x="1" y="8" width="3.5" height="3.5" fill="currentColor" opacity="0.5" />
+      <rect x="8" y="8" width="3.5" height="3.5" fill="currentColor" opacity="0.5" />
+      <rect x="4.5" y="11.5" width="3.5" height="3.5" fill="currentColor" opacity="0.5" />
+      <rect x="11.5" y="11.5" width="3.5" height="3.5" fill="currentColor" opacity="0.5" />
+    </svg>
+  </button>
+
   <!-- Copy Text Button -->
   <button
     class="doom-btn p-1.5"
