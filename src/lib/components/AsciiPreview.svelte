@@ -69,6 +69,14 @@
   export function getPreviewElement(): HTMLDivElement {
     return previewEl;
   }
+
+  export function getAsciiLines(): string[] {
+    return asciiResult?.lines ?? [];
+  }
+
+  export function getColoredLines(): ColoredLine[] {
+    return coloredLines;
+  }
 </script>
 
 <div

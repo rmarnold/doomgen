@@ -2,8 +2,23 @@
   import AsciiPreview from '$lib/components/AsciiPreview.svelte';
   import PaletteSelector from '$lib/components/PaletteSelector.svelte';
   import EffectControls from '$lib/components/EffectControls.svelte';
+  import ExportBar from '$lib/components/ExportBar.svelte';
   import { appState } from '$lib/stores/state.svelte';
   import { DOOM_FONTS } from '$lib/theme/fonts';
+  import type { ColoredLine } from '$lib/engine/colorizer';
+
+  let previewComponent: AsciiPreview;
+  let previewElement: HTMLElement | null = $state(null);
+  let asciiLines: string[] = $state([]);
+  let exportColoredLines: ColoredLine[] = $state([]);
+
+  $effect(() => {
+    if (previewComponent) {
+      previewElement = previewComponent.getPreviewElement();
+      asciiLines = previewComponent.getAsciiLines();
+      exportColoredLines = previewComponent.getColoredLines();
+    }
+  });
 </script>
 
 <svelte:head>
@@ -31,7 +46,7 @@
 
   <!-- Preview Area -->
   <section class="mb-6 flex-1">
-    <AsciiPreview />
+    <AsciiPreview bind:this={previewComponent} />
   </section>
 
   <!-- Controls -->
@@ -87,8 +102,13 @@
   </section>
 
   <!-- Export Bar -->
-  <footer class="flex flex-wrap gap-3 rounded-lg border border-doom-surface bg-doom-dark p-4">
-    <span class="text-sm text-doom-text-muted">Export options coming in Phase 4...</span>
+  <footer class="rounded-lg border border-doom-surface bg-doom-dark p-4">
+    <ExportBar
+      asciiLines={asciiLines}
+      coloredLines={exportColoredLines}
+      previewElement={previewElement}
+      filename={appState.text.toLowerCase().replace(/\s+/g, '-') || 'doomgen'}
+    />
   </footer>
 
 </div>
