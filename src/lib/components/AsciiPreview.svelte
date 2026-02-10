@@ -12,8 +12,10 @@
   let glowColor = $state('#ff3f3f');
   let error = $state<string | null>(null);
   let loading = $state(false);
+  let autoFontSize = $state<string | null>(null);
 
   let previewEl: HTMLDivElement;
+  let preRef = $state<HTMLPreElement | undefined>();
   let debounceTimer: ReturnType<typeof setTimeout>;
 
   // Re-render when inputs change
@@ -54,18 +56,35 @@
 
     let lines = colorize(asciiResult.lines, palette, appState.gradientDirection);
 
-    // Apply distress
     if (appState.distressIntensity > 0) {
       lines = applyDistress(lines, appState.distressIntensity);
     }
 
-    // Apply drip
     if (appState.dripDensity > 0) {
       const dripLines = applyDrip(lines, appState.dripDensity);
       lines = [...lines, ...dripLines];
     }
 
     coloredLines = lines;
+  });
+
+  // Auto-scale: shrink font size if ASCII overflows container width
+  $effect(() => {
+    if (coloredLines.length > 0 && previewEl && preRef) {
+      tick().then(() => {
+        if (!previewEl || !preRef) return;
+        const containerWidth = previewEl.clientWidth - 48; // padding
+        const contentWidth = preRef.scrollWidth;
+        if (contentWidth > containerWidth && containerWidth > 0) {
+          const scale = containerWidth / contentWidth;
+          const basePx = 14; // ~sm text size
+          const newPx = Math.max(4, Math.floor(basePx * scale));
+          autoFontSize = `${newPx}px`;
+        } else {
+          autoFontSize = null;
+        }
+      });
+    }
   });
 
   // After coloredLines updates, animate new spans
@@ -99,11 +118,15 @@
   export function getColoredLines(): ColoredLine[] {
     return coloredLines;
   }
+
+  export function getDimensions(): { width: number; height: number } {
+    return { width: asciiResult?.width ?? 0, height: asciiResult?.height ?? 0 };
+  }
 </script>
 
 <div
   bind:this={previewEl}
-  class="scanlines relative h-full min-h-[200px] overflow-auto rounded-lg border border-doom-surface bg-doom-dark p-6"
+  class="scanlines metal-panel-inset preview-glow-border relative flex h-full min-h-[200px] flex-col overflow-auto p-6"
 >
   {#if loading}
     <p class="animate-pulse text-doom-text-muted">Rendering...</p>
@@ -111,10 +134,11 @@
     <p class="text-doom-red">{error}</p>
   {:else if coloredLines.length > 0}
     <pre
-      class="whitespace-pre font-mono text-[0.5rem] leading-none sm:text-xs md:text-sm"
-      style={appState.shadowOffset > 0
-        ? `filter: drop-shadow(${appState.shadowOffset}px ${appState.shadowOffset}px 0px rgba(0,0,0,0.8));`
-        : ''}
+      bind:this={preRef}
+      class="whitespace-pre font-mono leading-none"
+      style="font-size: {autoFontSize ?? 'clamp(0.45rem, 1.2vw, 0.875rem)'};{appState.shadowOffset > 0
+        ? ` filter: drop-shadow(${appState.shadowOffset}px ${appState.shadowOffset}px 0px rgba(0,0,0,0.8));`
+        : ''}"
     >{#each coloredLines as line}{#each line as cell}<span
           style="color: {cell.color};{cell.color !== 'transparent' && appState.glowIntensity > 0
             ? ` text-shadow: 0 0 ${appState.glowIntensity * 0.07}px ${glowColor}, 0 0 ${appState.glowIntensity * 0.2}px ${glowColor}, 0 0 ${appState.glowIntensity * 0.42}px ${glowColor}, 0 0 ${appState.glowIntensity * 0.82}px ${glowColor};`

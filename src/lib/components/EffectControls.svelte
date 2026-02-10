@@ -10,16 +10,14 @@
   ];
 </script>
 
-<div class="space-y-4">
+<div class="space-y-3">
   <!-- Gradient Direction -->
   <div>
-    <span class="mb-1 block text-sm text-doom-text-muted">Direction</span>
-    <div class="flex gap-2">
+    <span class="mb-1 block text-[0.65rem] uppercase tracking-[0.15em] text-doom-text-muted" style="font-family: var(--font-doom-ui)">Direction</span>
+    <div class="flex gap-1.5">
       {#each directions as dir}
         <button
-          class="rounded border px-3 py-1 text-sm font-mono transition-colors {appState.gradientDirection === dir.value
-            ? 'border-doom-red bg-doom-surface text-doom-text'
-            : 'border-doom-surface bg-doom-black text-doom-text-muted hover:border-doom-red/50'}"
+          class="doom-btn text-xs {appState.gradientDirection === dir.value ? 'active' : ''}"
           onclick={() => (appState.gradientDirection = dir.value)}
         >
           {dir.label}
@@ -30,37 +28,37 @@
 
   <!-- Glow -->
   <label class="block">
-    <span class="mb-1 flex justify-between text-sm text-doom-text-muted">
+    <span class="mb-0.5 flex justify-between text-[0.65rem] uppercase tracking-[0.15em] text-doom-text-muted" style="font-family: var(--font-doom-ui)">
       <span>Glow</span>
-      <span>{appState.glowIntensity}%</span>
+      <span class="font-mono normal-case tracking-normal">{appState.glowIntensity}%</span>
     </span>
-    <input type="range" min="0" max="100" bind:value={appState.glowIntensity} class="w-full accent-doom-red" />
+    <input type="range" min="0" max="100" bind:value={appState.glowIntensity} />
   </label>
 
   <!-- Drip -->
   <label class="block">
-    <span class="mb-1 flex justify-between text-sm text-doom-text-muted">
+    <span class="mb-0.5 flex justify-between text-[0.65rem] uppercase tracking-[0.15em] text-doom-text-muted" style="font-family: var(--font-doom-ui)">
       <span>Drip</span>
-      <span>{appState.dripDensity}%</span>
+      <span class="font-mono normal-case tracking-normal">{appState.dripDensity}%</span>
     </span>
-    <input type="range" min="0" max="100" bind:value={appState.dripDensity} class="w-full accent-doom-red" />
+    <input type="range" min="0" max="100" bind:value={appState.dripDensity} />
   </label>
 
   <!-- Shadow -->
   <label class="block">
-    <span class="mb-1 flex justify-between text-sm text-doom-text-muted">
+    <span class="mb-0.5 flex justify-between text-[0.65rem] uppercase tracking-[0.15em] text-doom-text-muted" style="font-family: var(--font-doom-ui)">
       <span>Shadow</span>
-      <span>{appState.shadowOffset}px</span>
+      <span class="font-mono normal-case tracking-normal">{appState.shadowOffset}px</span>
     </span>
-    <input type="range" min="0" max="6" bind:value={appState.shadowOffset} class="w-full accent-doom-red" />
+    <input type="range" min="0" max="6" bind:value={appState.shadowOffset} />
   </label>
 
   <!-- Distress -->
   <label class="block">
-    <span class="mb-1 flex justify-between text-sm text-doom-text-muted">
+    <span class="mb-0.5 flex justify-between text-[0.65rem] uppercase tracking-[0.15em] text-doom-text-muted" style="font-family: var(--font-doom-ui)">
       <span>Distress</span>
-      <span>{appState.distressIntensity}%</span>
+      <span class="font-mono normal-case tracking-normal">{appState.distressIntensity}%</span>
     </span>
-    <input type="range" min="0" max="50" bind:value={appState.distressIntensity} class="w-full accent-doom-red" />
+    <input type="range" min="0" max="50" bind:value={appState.distressIntensity} />
   </label>
 </div>

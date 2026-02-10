@@ -23,8 +23,8 @@ export interface AppState {
 }
 
 const defaults: AppState = {
-  text: 'DOOM',
-  fontId: 'Doom',
+  text: 'DOOMGEN',
+  fontId: 'Banner3-D',
   layout: 'default',
   paletteId: 'hellfire',
   gradientDirection: 'horizontal',

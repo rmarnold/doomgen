@@ -16,6 +16,20 @@ const fontImports: Record<string, () => Promise<{ default: string }>> = {
   'Graffiti': () => import('figlet/importable-fonts/Graffiti.js'),
   'Alligator': () => import('figlet/importable-fonts/Alligator.js'),
   'Isometric1': () => import('figlet/importable-fonts/Isometric1.js'),
+  'Chunky': () => import('figlet/importable-fonts/Chunky.js'),
+  'Slant': () => import('figlet/importable-fonts/Slant.js'),
+  'Standard': () => import('figlet/importable-fonts/Standard.js'),
+  'Big': () => import('figlet/importable-fonts/Big.js'),
+  'Star Wars': () => import('figlet/importable-fonts/Star Wars.js'),
+  'Cyberlarge': () => import('figlet/importable-fonts/Cyberlarge.js'),
+  'Larry 3D': () => import('figlet/importable-fonts/Larry 3D.js'),
+  'Ogre': () => import('figlet/importable-fonts/Ogre.js'),
+  'Colossal': () => import('figlet/importable-fonts/Colossal.js'),
+  'Small Slant': () => import('figlet/importable-fonts/Small Slant.js'),
+  'Elite': () => import('figlet/importable-fonts/Elite.js'),
+  'DOS Rebel': () => import('figlet/importable-fonts/DOS Rebel.js'),
+  'Rectangles': () => import('figlet/importable-fonts/Rectangles.js'),
+  'Calvin S': () => import('figlet/importable-fonts/Calvin S.js'),
 };
 
 /**
@@ -87,5 +101,5 @@ export async function renderFontPreview(fontId: string): Promise<string> {
  * Preload the default Doom font on app startup.
  */
 export async function preloadDefaultFont(): Promise<void> {
-  await loadFont('Doom');
+  await loadFont('Banner3-D');
 }
