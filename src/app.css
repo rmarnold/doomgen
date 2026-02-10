@@ -44,14 +44,19 @@
 
 /* ── Global Resets ────────────────────────────── */
 html {
+  background: oklch(0.10 0.02 20);
+  color: var(--color-doom-text);
+  min-height: 100vh;
+}
+
+/* Static radial gradient on body — no background-attachment: fixed */
+body {
   background: radial-gradient(
     ellipse at 50% 100%,
     oklch(0.18 0.08 30) 0%,
     oklch(0.12 0.04 20) 40%,
     oklch(0.08 0.01 0) 100%
   );
-  background-attachment: fixed;
-  color: var(--color-doom-text);
   min-height: 100vh;
 }
 
@@ -59,17 +64,13 @@ html {
 
 .doom-glow {
   text-shadow:
-    0 0 7px var(--color-doom-glow),
     0 0 10px var(--color-doom-glow),
-    0 0 21px var(--color-doom-glow),
-    0 0 42px var(--color-doom-red),
-    0 0 82px var(--color-doom-red);
+    0 0 40px var(--color-doom-red);
 }
 
-/* Pulsing glow for title — uses opacity for GPU compositing */
+/* Pulsing glow for title — opacity only */
 .doom-glow-pulse {
   animation: glow-pulse 3s ease-in-out infinite;
-  will-change: opacity;
 }
 
 @keyframes glow-pulse {
@@ -87,7 +88,7 @@ html {
   -webkit-text-fill-color: transparent;
 }
 
-/* Animated scanlines with flicker */
+/* Static scanlines — no continuous animation */
 .scanlines::before {
   content: '';
   position: absolute;
@@ -101,30 +102,9 @@ html {
   );
   pointer-events: none;
   z-index: 10;
-  animation: scanline-flicker 8s linear infinite;
-  will-change: opacity;
 }
 
-@keyframes scanline-flicker {
-  0%, 94%, 100% { opacity: 1; }
-  95% { opacity: 0.6; }
-  96% { opacity: 1; }
-  97% { opacity: 0.7; }
-  98% { opacity: 1; }
-}
-
-.vignette::after {
-  content: '';
-  position: fixed;
-  inset: 0;
-  background: radial-gradient(
-    ellipse at center,
-    transparent 60%,
-    rgba(0, 0, 0, 0.6) 100%
-  );
-  pointer-events: none;
-  z-index: 50;
-}
+/* Vignette — disabled for GPU performance. The body radial gradient provides edge darkening. */
 
 /* ── Metal Beveled Panels ─────────────────────── */
 
@@ -159,36 +139,16 @@ html {
 
 .preview-glow-border {
   box-shadow:
-    0 0 8px rgba(255, 50, 30, 0.15),
-    0 0 20px rgba(255, 50, 30, 0.08),
+    0 0 10px rgba(255, 50, 30, 0.2),
     inset 0 2px 4px rgba(0, 0, 0, 0.5);
-  animation: border-glow 4s ease-in-out infinite;
-  will-change: box-shadow;
 }
 
-@keyframes border-glow {
-  0%, 100% {
-    box-shadow:
-      0 0 8px rgba(255, 50, 30, 0.15),
-      0 0 20px rgba(255, 50, 30, 0.08),
-      inset 0 2px 4px rgba(0, 0, 0, 0.5);
-  }
-  50% {
-    box-shadow:
-      0 0 12px rgba(255, 50, 30, 0.3),
-      0 0 30px rgba(255, 50, 30, 0.15),
-      inset 0 2px 4px rgba(0, 0, 0, 0.5);
-  }
-}
+/* ── ASCII Preview Glow (single element, inherited by spans) ─── */
 
-/* ── ASCII Preview Glow (CSS-variable driven) ─── */
-
-.ascii-glow span {
+.ascii-glow {
   text-shadow:
-    0 0 calc(var(--glow-intensity, 0) * 0.07px) var(--glow-color, #ff3f3f),
-    0 0 calc(var(--glow-intensity, 0) * 0.2px) var(--glow-color, #ff3f3f),
-    0 0 calc(var(--glow-intensity, 0) * 0.42px) var(--glow-color, #ff3f3f),
-    0 0 calc(var(--glow-intensity, 0) * 0.82px) var(--glow-color, #ff3f3f);
+    0 0 calc(var(--glow-intensity, 0) * 0.15px) var(--glow-color, #ff3f3f),
+    0 0 calc(var(--glow-intensity, 0) * 0.5px) var(--glow-color, #ff3f3f);
 }
 
 /* ── Custom Range Sliders ─────────────────────── */
@@ -335,9 +295,7 @@ input[type="range"]:focus::-webkit-slider-thumb {
 /* ── Reduced Motion ───────────────────────────── */
 
 @media (prefers-reduced-motion: reduce) {
-  .doom-glow-pulse,
-  .scanlines::before,
-  .preview-glow-border {
+  .doom-glow-pulse {
     animation: none !important;
   }
 
