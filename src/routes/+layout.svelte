@@ -1,11 +1,11 @@
-<script>
+<script lang="ts">
   import '../app.css';
   import { onMount } from 'svelte';
   import gsap from 'gsap';
   import { preloadDefaultFont } from '$lib/engine/figlet-renderer';
 
   let { children } = $props();
-  let container;
+  let container: HTMLDivElement;
 
   onMount(async () => {
     await document.fonts.load('16px "JetBrains Mono"');
