@@ -103,3 +103,36 @@ export function downloadAnsi(coloredLines: ColoredLine[], filename: string): voi
   link.click();
   URL.revokeObjectURL(link.href);
 }
+
+/**
+ * Generate and download a shell script that prints colored ASCII art as a terminal banner.
+ */
+export function downloadBanner(coloredLines: ColoredLine[], filename: string): void {
+  const printfLines = coloredLines.map((line) => {
+    const escaped = line
+      .map((cell) => {
+        if (cell.char === ' ' || cell.color === 'transparent') return cell.char;
+        const [r, g, b] = chroma(cell.color).rgb();
+        return `\\e[38;2;${r};${g};${b}m${cell.char}\\e[0m`;
+      })
+      .join('');
+    // Escape single quotes for shell safety: ' → '\''
+    const safe = escaped.replace(/'/g, "'\\''");
+    return `printf '${safe}\\n'`;
+  });
+
+  const script = `#!/usr/bin/env bash
+# DOOMGEN Terminal Banner
+# Add to your shell config:
+#   source ~/.doomgen-banner.sh
+
+${printfLines.join('\n')}
+`;
+
+  const blob = new Blob([script], { type: 'text/x-shellscript' });
+  const link = document.createElement('a');
+  link.download = `${filename}-banner.sh`;
+  link.href = URL.createObjectURL(blob);
+  link.click();
+  URL.revokeObjectURL(link.href);
+}

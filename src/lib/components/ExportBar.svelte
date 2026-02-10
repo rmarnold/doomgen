@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { copyText, copyImage, downloadPng, downloadSvg, downloadAnsi } from '$lib/engine/exporter';
+  import { copyText, copyImage, downloadPng, downloadSvg, downloadAnsi, downloadBanner } from '$lib/engine/exporter';
   import type { ColoredLine } from '$lib/engine/colorizer';
 
   interface Props {
@@ -67,6 +67,15 @@
     }
   }
 
+  function handleDownloadBanner() {
+    try {
+      downloadBanner(coloredLines, filename);
+      showFeedback('Banner downloaded!');
+    } catch {
+      showFeedback('Download failed');
+    }
+  }
+
   const btnClass = 'rounded border border-doom-surface bg-doom-black px-4 py-2 text-sm font-mono text-doom-text-muted transition-colors hover:border-doom-red hover:text-doom-text active:bg-doom-surface';
 </script>
 
@@ -76,6 +85,7 @@
   <button class={btnClass} onclick={handleCopyImage} disabled={!previewElement}>Copy Image</button>
   <button class={btnClass} onclick={handleDownloadSvg}>SVG</button>
   <button class={btnClass} onclick={handleDownloadAnsi}>ANSI</button>
+  <button class={btnClass} onclick={handleDownloadBanner}>Banner</button>
 
   {#if feedback}
     <span class="text-sm text-doom-green">{feedback}</span>

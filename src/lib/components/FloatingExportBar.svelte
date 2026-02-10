@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { copyText, copyImage, downloadPng, downloadSvg, downloadAnsi } from '$lib/engine/exporter';
+  import { copyText, copyImage, downloadPng, downloadSvg, downloadAnsi, downloadBanner } from '$lib/engine/exporter';
   import type { ColoredLine } from '$lib/engine/colorizer';
 
   interface Props {
@@ -61,6 +61,15 @@
   function handleDownloadAnsi() {
     try {
       downloadAnsi(coloredLines, filename);
+      showFeedback();
+    } catch {
+      // Silent failure for floating bar
+    }
+  }
+
+  function handleDownloadBanner() {
+    try {
+      downloadBanner(coloredLines, filename);
       showFeedback();
     } catch {
       // Silent failure for floating bar
@@ -151,6 +160,20 @@
       <path d="M4 9.5h4" stroke-width="1" />
       <path d="M9.5 9.5h2.5" stroke-width="1" />
       <circle cx="4.5" cy="11.5" r="0.5" fill="currentColor" />
+    </svg>
+  </button>
+
+  <!-- Banner Download Button -->
+  <button
+    class="doom-btn p-1.5"
+    onclick={handleDownloadBanner}
+    title="Download Banner Script"
+    aria-label="Download Banner Script"
+  >
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+      <rect x="1.5" y="2.5" width="13" height="11" rx="1.5" />
+      <path d="M4.5 6l2 2-2 2" stroke-linecap="round" stroke-linejoin="round" />
+      <path d="M8 10h3.5" stroke-linecap="round" />
     </svg>
   </button>
 
