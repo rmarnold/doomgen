@@ -32,7 +32,7 @@
   <header class="flex items-center justify-between pb-6">
     <h1 class="metal-text text-4xl font-bold tracking-wider sm:text-5xl">DOOMGEN</h1>
     <a
-      href="https://github.com/rarnold/doomgen"
+      href="https://github.com/rmarnold/doomgen"
       target="_blank"
       rel="noopener noreferrer"
       class="text-doom-text-muted transition-colors hover:text-doom-glow"
