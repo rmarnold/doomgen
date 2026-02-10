@@ -111,7 +111,7 @@
     <p class="text-doom-red">{error}</p>
   {:else if coloredLines.length > 0}
     <pre
-      class="whitespace-pre font-mono text-xs leading-none sm:text-sm"
+      class="whitespace-pre font-mono text-[0.5rem] leading-none sm:text-xs md:text-sm"
       style={appState.shadowOffset > 0
         ? `filter: drop-shadow(${appState.shadowOffset}px ${appState.shadowOffset}px 0px rgba(0,0,0,0.8));`
         : ''}
