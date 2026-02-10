@@ -66,27 +66,15 @@ html {
     0 0 82px var(--color-doom-red);
 }
 
-/* Pulsing glow for title */
+/* Pulsing glow for title — uses opacity for GPU compositing */
 .doom-glow-pulse {
   animation: glow-pulse 3s ease-in-out infinite;
+  will-change: opacity;
 }
 
 @keyframes glow-pulse {
-  0%, 100% {
-    text-shadow:
-      0 0 7px var(--color-doom-glow),
-      0 0 10px var(--color-doom-glow),
-      0 0 21px var(--color-doom-glow),
-      0 0 42px var(--color-doom-red);
-  }
-  50% {
-    text-shadow:
-      0 0 10px var(--color-doom-glow),
-      0 0 20px var(--color-doom-glow),
-      0 0 40px var(--color-doom-glow),
-      0 0 80px var(--color-doom-red),
-      0 0 120px var(--color-doom-red);
-  }
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
 }
 
 .metal-text {
@@ -114,6 +102,7 @@ html {
   pointer-events: none;
   z-index: 10;
   animation: scanline-flicker 8s linear infinite;
+  will-change: opacity;
 }
 
 @keyframes scanline-flicker {
@@ -174,6 +163,7 @@ html {
     0 0 20px rgba(255, 50, 30, 0.08),
     inset 0 2px 4px rgba(0, 0, 0, 0.5);
   animation: border-glow 4s ease-in-out infinite;
+  will-change: box-shadow;
 }
 
 @keyframes border-glow {
@@ -189,6 +179,16 @@ html {
       0 0 30px rgba(255, 50, 30, 0.15),
       inset 0 2px 4px rgba(0, 0, 0, 0.5);
   }
+}
+
+/* ── ASCII Preview Glow (CSS-variable driven) ─── */
+
+.ascii-glow span {
+  text-shadow:
+    0 0 calc(var(--glow-intensity, 0) * 0.07px) var(--glow-color, #ff3f3f),
+    0 0 calc(var(--glow-intensity, 0) * 0.2px) var(--glow-color, #ff3f3f),
+    0 0 calc(var(--glow-intensity, 0) * 0.42px) var(--glow-color, #ff3f3f),
+    0 0 calc(var(--glow-intensity, 0) * 0.82px) var(--glow-color, #ff3f3f);
 }
 
 /* ── Custom Range Sliders ─────────────────────── */

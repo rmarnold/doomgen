@@ -8,6 +8,21 @@
     { value: 'diagonal', label: 'D' },
     { value: 'radial', label: 'R' },
   ];
+
+  // rAF-throttled slider updater to avoid per-pixel re-render storms
+  function throttledSlider(setter: (v: number) => void) {
+    let rafId = 0;
+    return (e: Event) => {
+      const val = Number((e.target as HTMLInputElement).value);
+      cancelAnimationFrame(rafId);
+      rafId = requestAnimationFrame(() => setter(val));
+    };
+  }
+
+  const onGlow = throttledSlider((v) => (appState.glowIntensity = v));
+  const onDrip = throttledSlider((v) => (appState.dripDensity = v));
+  const onShadow = throttledSlider((v) => (appState.shadowOffset = v));
+  const onDistress = throttledSlider((v) => (appState.distressIntensity = v));
 </script>
 
 <div class="space-y-3">
@@ -32,7 +47,7 @@
       <span>Glow</span>
       <span class="font-mono normal-case tracking-normal">{appState.glowIntensity}%</span>
     </span>
-    <input type="range" min="0" max="100" bind:value={appState.glowIntensity} />
+    <input type="range" min="0" max="100" value={appState.glowIntensity} oninput={onGlow} />
   </label>
 
   <!-- Drip -->
@@ -41,7 +56,7 @@
       <span>Drip</span>
       <span class="font-mono normal-case tracking-normal">{appState.dripDensity}%</span>
     </span>
-    <input type="range" min="0" max="100" bind:value={appState.dripDensity} />
+    <input type="range" min="0" max="100" value={appState.dripDensity} oninput={onDrip} />
   </label>
 
   <!-- Shadow -->
@@ -50,7 +65,7 @@
       <span>Shadow</span>
       <span class="font-mono normal-case tracking-normal">{appState.shadowOffset}px</span>
     </span>
-    <input type="range" min="0" max="6" bind:value={appState.shadowOffset} />
+    <input type="range" min="0" max="6" value={appState.shadowOffset} oninput={onShadow} />
   </label>
 
   <!-- Distress -->
@@ -59,6 +74,6 @@
       <span>Distress</span>
       <span class="font-mono normal-case tracking-normal">{appState.distressIntensity}%</span>
     </span>
-    <input type="range" min="0" max="50" bind:value={appState.distressIntensity} />
+    <input type="range" min="0" max="50" value={appState.distressIntensity} oninput={onDistress} />
   </label>
 </div>

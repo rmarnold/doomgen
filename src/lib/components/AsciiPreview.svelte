@@ -4,7 +4,6 @@
   import { applyDrip, applyDistress } from '$lib/engine/effects';
   import { appState } from '$lib/stores/state.svelte';
   import { getPaletteById } from '$lib/theme/palettes';
-  import gsap from 'gsap';
   import { tick } from 'svelte';
 
   let asciiResult = $state<RenderResult | null>(null);
@@ -17,6 +16,10 @@
   let previewEl: HTMLDivElement;
   let preRef = $state<HTMLPreElement | undefined>();
   let debounceTimer: ReturnType<typeof setTimeout>;
+
+  // Track text+font to only animate on meaningful content changes
+  let lastRenderKey = '';
+  let shouldAnimate = $state(false);
 
   // Re-render when inputs change
   $effect(() => {
@@ -33,8 +36,16 @@
     loading = true;
     debounceTimer = setTimeout(async () => {
       try {
-        asciiResult = await renderAscii({ text, fontId, layout });
+        const renderKey = `${text}::${fontId}`;
+        const result = await renderAscii({ text, fontId, layout });
+        asciiResult = result;
         error = null;
+
+        // Only trigger animation when text or font actually changed
+        if (renderKey !== lastRenderKey) {
+          lastRenderKey = renderKey;
+          shouldAnimate = true;
+        }
       } catch (e) {
         error = e instanceof Error ? e.message : 'Render failed';
         asciiResult = null;
@@ -45,7 +56,7 @@
     }, 150);
   });
 
-  // Re-colorize when palette/direction/effects change
+  // Merged: Re-colorize + auto-scale in a single $effect
   $effect(() => {
     if (!asciiResult) {
       coloredLines = [];
@@ -66,43 +77,35 @@
     }
 
     coloredLines = lines;
+
+    // Auto-scale: run after DOM update via rAF (avoids tick() overhead)
+    requestAnimationFrame(() => {
+      if (!previewEl || !preRef) return;
+      const containerWidth = previewEl.clientWidth - 48;
+      const contentWidth = preRef.scrollWidth;
+      if (contentWidth > containerWidth && containerWidth > 0) {
+        const scale = containerWidth / contentWidth;
+        const basePx = 14;
+        const newPx = Math.max(4, Math.floor(basePx * scale));
+        autoFontSize = `${newPx}px`;
+      } else {
+        autoFontSize = null;
+      }
+    });
   });
 
-  // Auto-scale: shrink font size if ASCII overflows container width
+  // Single container fade-in animation — only on text/font changes
   $effect(() => {
-    if (coloredLines.length > 0 && previewEl && preRef) {
+    if (shouldAnimate && coloredLines.length > 0 && appState.animationsEnabled) {
+      shouldAnimate = false;
       tick().then(() => {
-        if (!previewEl || !preRef) return;
-        const containerWidth = previewEl.clientWidth - 48; // padding
-        const contentWidth = preRef.scrollWidth;
-        if (contentWidth > containerWidth && containerWidth > 0) {
-          const scale = containerWidth / contentWidth;
-          const basePx = 14; // ~sm text size
-          const newPx = Math.max(4, Math.floor(basePx * scale));
-          autoFontSize = `${newPx}px`;
-        } else {
-          autoFontSize = null;
-        }
-      });
-    }
-  });
-
-  // After coloredLines updates, animate new spans
-  $effect(() => {
-    if (coloredLines.length > 0 && appState.animationsEnabled) {
-      tick().then(() => {
-        if (!previewEl) return;
-        const spans = previewEl.querySelectorAll('pre span');
-        gsap.fromTo(
-          spans,
-          { opacity: 0 },
-          {
-            opacity: 1,
-            duration: 0.02,
-            stagger: 0.001,
-            ease: 'none',
-          }
-        );
+        if (!preRef) return;
+        preRef.style.opacity = '0';
+        requestAnimationFrame(() => {
+          if (!preRef) return;
+          preRef.style.transition = 'opacity 0.3s ease-in';
+          preRef.style.opacity = '1';
+        });
       });
     }
   });
@@ -135,14 +138,12 @@
   {:else if coloredLines.length > 0}
     <pre
       bind:this={preRef}
-      class="whitespace-pre font-mono leading-none"
+      class="whitespace-pre font-mono leading-none {appState.glowIntensity > 0 ? 'ascii-glow' : ''}"
       style="font-size: {autoFontSize ?? 'clamp(0.45rem, 1.2vw, 0.875rem)'};{appState.shadowOffset > 0
         ? ` filter: drop-shadow(${appState.shadowOffset}px ${appState.shadowOffset}px 0px rgba(0,0,0,0.8));`
-        : ''}"
+        : ''} --glow-color: {glowColor}; --glow-intensity: {appState.glowIntensity};"
     >{#each coloredLines as line}{#each line as cell}<span
-          style="color: {cell.color};{cell.color !== 'transparent' && appState.glowIntensity > 0
-            ? ` text-shadow: 0 0 ${appState.glowIntensity * 0.07}px ${glowColor}, 0 0 ${appState.glowIntensity * 0.2}px ${glowColor}, 0 0 ${appState.glowIntensity * 0.42}px ${glowColor}, 0 0 ${appState.glowIntensity * 0.82}px ${glowColor};`
-            : ''}"
+          style="color: {cell.color}"
         >{cell.char}</span>{/each}
 {/each}</pre>
   {:else}

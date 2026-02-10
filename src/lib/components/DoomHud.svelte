@@ -18,7 +18,7 @@ const paletteGradient = $derived(`linear-gradient(90deg, ${palette.colors.join('
 </script>
 
 <div
-  class="flex items-center justify-between px-3 py-1.5 bg-doom-black/70 backdrop-blur-sm border-t border-doom-surface"
+  class="flex items-center justify-between px-3 py-1.5 bg-doom-black/90 border-t border-doom-surface"
   style="font-family: var(--font-doom-ui)"
 >
   <!-- Font Name (Left) -->

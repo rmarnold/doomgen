@@ -15,12 +15,23 @@
   // Mobile sidebar toggle
   let sidebarOpen = $state(false);
 
+  // Debounced sync — avoid re-evaluating getters on every micro-change
+  let syncRaf = 0;
   $effect(() => {
     if (previewComponent) {
-      previewElement = previewComponent.getPreviewElement();
-      asciiLines = previewComponent.getAsciiLines();
-      exportColoredLines = previewComponent.getColoredLines();
-      dimensions = previewComponent.getDimensions();
+      // Touch reactive deps so Svelte tracks them
+      void appState.text;
+      void appState.fontId;
+      void appState.paletteId;
+
+      cancelAnimationFrame(syncRaf);
+      syncRaf = requestAnimationFrame(() => {
+        if (!previewComponent) return;
+        previewElement = previewComponent.getPreviewElement();
+        asciiLines = previewComponent.getAsciiLines();
+        exportColoredLines = previewComponent.getColoredLines();
+        dimensions = previewComponent.getDimensions();
+      });
     }
   });
 </script>
