@@ -1,5 +1,7 @@
 <script lang="ts">
   import AsciiPreview from '$lib/components/AsciiPreview.svelte';
+  import PaletteSelector from '$lib/components/PaletteSelector.svelte';
+  import EffectControls from '$lib/components/EffectControls.svelte';
   import { appState } from '$lib/stores/state.svelte';
   import { DOOM_FONTS } from '$lib/theme/fonts';
 </script>
@@ -78,23 +80,8 @@
     <!-- Style Controls -->
     <div class="space-y-4 rounded-lg border border-doom-surface bg-doom-dark p-4">
       <h2 class="text-sm font-bold uppercase tracking-widest text-doom-text-muted">Style</h2>
-
-      <label class="block">
-        <span class="mb-1 flex justify-between text-sm text-doom-text-muted">
-          <span>Glow</span>
-          <span>{appState.glowIntensity}%</span>
-        </span>
-        <input
-          type="range"
-          min="0"
-          max="100"
-          bind:value={appState.glowIntensity}
-          class="w-full accent-doom-red"
-        />
-      </label>
-
-      <!-- Palette, Direction, Drip, Shadow, Distress controls will be added in Phase 3 -->
-      <p class="text-sm text-doom-text-muted">More style controls coming in Phase 3...</p>
+      <PaletteSelector />
+      <EffectControls />
     </div>
 
   </section>
