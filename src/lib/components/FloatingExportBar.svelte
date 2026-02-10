@@ -6,10 +6,11 @@
     asciiLines: string[];
     coloredLines: ColoredLine[];
     previewElement: HTMLElement | null;
+    preElement: HTMLElement | null;
     filename: string;
   }
 
-  let { asciiLines, coloredLines, previewElement, filename }: Props = $props();
+  let { asciiLines, coloredLines, previewElement, preElement, filename }: Props = $props();
 
   let transparentBg = $state(false);
   let showSuccess = $state(false);
@@ -31,9 +32,10 @@
   }
 
   async function handleCopyImage() {
-    if (!previewElement) return;
+    const el = preElement ?? previewElement;
+    if (!el) return;
     try {
-      await copyImage(previewElement, { transparentBg });
+      await copyImage(el, { transparentBg });
       showFeedback();
     } catch {
       // Silent failure for floating bar
@@ -41,9 +43,10 @@
   }
 
   async function handleDownloadPng() {
-    if (!previewElement) return;
+    const el = preElement ?? previewElement;
+    if (!el) return;
     try {
-      await downloadPng(previewElement, filename, { transparentBg });
+      await downloadPng(el, filename, { transparentBg });
       showFeedback();
     } catch {
       // Silent failure for floating bar

@@ -6,10 +6,11 @@
     asciiLines: string[];
     coloredLines: ColoredLine[];
     previewElement: HTMLElement | null;
+    preElement: HTMLElement | null;
     filename: string;
   }
 
-  let { asciiLines, coloredLines, previewElement, filename }: Props = $props();
+  let { asciiLines, coloredLines, previewElement, preElement, filename }: Props = $props();
 
   let transparentBg = $state(false);
   let feedback = $state<string | null>(null);
@@ -31,9 +32,10 @@
   }
 
   async function handleCopyImage() {
-    if (!previewElement) return;
+    const el = preElement ?? previewElement;
+    if (!el) return;
     try {
-      await copyImage(previewElement, { transparentBg });
+      await copyImage(el, { transparentBg });
       showFeedback('Image copied!');
     } catch {
       showFeedback('Copy failed');
@@ -41,9 +43,10 @@
   }
 
   async function handleDownloadPng() {
-    if (!previewElement) return;
+    const el = preElement ?? previewElement;
+    if (!el) return;
     try {
-      await downloadPng(previewElement, filename, { transparentBg });
+      await downloadPng(el, filename, { transparentBg });
       showFeedback('PNG downloaded!');
     } catch {
       showFeedback('Download failed');
