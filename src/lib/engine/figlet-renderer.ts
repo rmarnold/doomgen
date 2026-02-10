@@ -68,3 +68,10 @@ export async function renderFontPreview(fontId: string): Promise<string> {
   const result = await renderAscii({ text: 'Abc', fontId, layout: 'fitted' });
   return result.text;
 }
+
+/**
+ * Preload the default Doom font on app startup.
+ */
+export async function preloadDefaultFont(): Promise<void> {
+  await loadFont('Doom');
+}

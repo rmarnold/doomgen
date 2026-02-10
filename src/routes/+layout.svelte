@@ -2,11 +2,14 @@
   import '../app.css';
   import { onMount } from 'svelte';
   import gsap from 'gsap';
+  import { preloadDefaultFont } from '$lib/engine/figlet-renderer';
 
   let { children } = $props();
   let container;
 
-  onMount(() => {
+  onMount(async () => {
+    await document.fonts.load('16px "JetBrains Mono"');
+    preloadDefaultFont();
     gsap.from(container, {
       opacity: 0,
       duration: 0.8,
