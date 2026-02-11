@@ -423,9 +423,9 @@
     >
       {#if appState.crtEnabled && appState.crtCurvature > 0 && barrelMapUrl}
       <svg width="0" height="0" style="position:absolute" aria-hidden="true">
-        <filter id="crt-barrel-distort" x="-10%" y="-10%" width="120%" height="120%">
-          <feImage href={barrelMapUrl} result="barrel-map" preserveAspectRatio="none" />
-          <feDisplacementMap in="SourceGraphic" in2="barrel-map" scale={appState.crtCurvature * 0.6} xChannelSelector="R" yChannelSelector="G" />
+        <filter id="crt-barrel-distort" primitiveUnits="objectBoundingBox" x="-0.1" y="-0.1" width="1.2" height="1.2">
+          <feImage href={barrelMapUrl} result="barrel-map" preserveAspectRatio="none" x="0" y="0" width="1" height="1" />
+          <feDisplacementMap in="SourceGraphic" in2="barrel-map" scale={appState.crtCurvature * 0.001} xChannelSelector="R" yChannelSelector="G" />
         </filter>
       </svg>
       {/if}
