@@ -12,13 +12,25 @@ ASCII art generator with DOOM aesthetics. Transform text into stylized ASCII art
 
 ## Features
 
+**Input**
 - Real-time ASCII art generation using Figlet fonts
-- Authentic DOOM color palettes (DOOM1, DOOM2, TNT, Plutonia)
-- Visual effects: Glow, Drip, Distress, Drop Shadow, Pixelation, CRT Monitor (scanlines, phosphor, curvature, flicker, power loss, screen blip), Screen Shake, Color Shifting
-- Per-character color customization with gradient directions and brightness normalization
-- Export to PNG, Animated WebP, SVG, ANSI, Shell Banner, HTML, and JSON (with import)
+- Configurable character layout modes (Default, Full, Fitted)
+
+**Style** (collapsible panel with sub-sections)
+- *Palette* — Authentic DOOM color palettes (DOOM1, DOOM2, TNT, Plutonia) with background color picker and transparent mode
+- *Gradient* — Direction modes (None, Horizontal, Vertical, Diagonal, Radial), brightness normalization, palette range sliders, zoom control
+- *Effects* — Glow, Drip, Drop Shadow, Distress, Pixelation, Color Shift, Screen Shake
+- *CRT Monitor* — Scanlines, phosphor vignette, curvature, flicker, power loss, screen blip
+
+**Export** (categorized by format type)
+- *Still* — PNG, WebP, Copy Image
+- *Animated* — Animated WebP, SVG (CSS animations), HTML (JS animations)
+- *Text* — Copy Text, ANSI, Shell Banner
+- *Data* — JSON preset export/import
+
+**Other**
 - Mobile-responsive design with floating export bar
-- GSAP-powered page entrance and screen shake animations
+- GSAP-powered page entrance animations
 - Accessibility: respects `prefers-reduced-motion`
 
 ## Development

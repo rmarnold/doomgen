@@ -15,7 +15,7 @@ DOOMGEN is a web-based ASCII art logo generator that renders user text into high
 - Generate professional-quality ASCII art logos from user text input
 - Apply the DOOM franchise visual aesthetic (fire gradients, red glow, metal textures, drip effects)
 - Provide real-time preview with interactive controls
-- Export in multiple formats (PNG, SVG, plain text, ANSI, clipboard)
+- Export in multiple formats (PNG, WebP, Animated WebP, SVG, HTML, ANSI, Shell Banner, JSON, clipboard)
 - Host as a static site on GitHub Pages
 
 ### Non-Goals
