@@ -104,7 +104,7 @@
         <input
           type="checkbox"
           checked={appState.crtEnabled}
-          onchange={() => (appState.crtEnabled = !appState.crtEnabled)}
+          onchange={(e: Event) => (appState.crtEnabled = (e.target as HTMLInputElement).checked)}
           onclick={(e: MouseEvent) => e.stopPropagation()}
           class="accent-doom-red w-3 h-3 cursor-pointer"
         />
