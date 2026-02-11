@@ -414,8 +414,7 @@
       {#if appState.crtEnabled && appState.crtCurvature > 0 && barrelMapUri}
       <svg width="0" height="0" style="position:absolute" aria-hidden="true">
         <filter id="crt-barrel" x="-5%" y="-5%" width="110%" height="110%" color-interpolation-filters="sRGB">
-          <feImage href={barrelMapUri} result="barrelMap" preserveAspectRatio="none"
-                   x="0%" y="0%" width="100%" height="100%" />
+          <feImage href={barrelMapUri} result="barrelMap" preserveAspectRatio="none" />
           <feDisplacementMap in="SourceGraphic" in2="barrelMap"
                              scale={appState.crtCurvature * 0.8}
                              xChannelSelector="R" yChannelSelector="G" />
