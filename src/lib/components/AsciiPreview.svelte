@@ -15,6 +15,7 @@
 
   let previewEl: HTMLDivElement;
   let preRef = $state<HTMLPreElement | undefined>();
+  let barrelMapUri = $state('');
   let debounceTimer: ReturnType<typeof setTimeout>;
 
   // Track text+font to only animate on meaningful content changes
@@ -331,6 +332,32 @@
     return () => clearTimeout(timerId);
   });
 
+  // Generate barrel displacement map for CRT curvature (runs once on mount)
+  $effect(() => {
+    if (typeof document === 'undefined') return;
+    const size = 128;
+    const canvas = document.createElement('canvas');
+    canvas.width = canvas.height = size;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    const img = ctx.createImageData(size, size);
+    const k = 0.35;
+    for (let y = 0; y < size; y++) {
+      for (let x = 0; x < size; x++) {
+        const u = (x / (size - 1)) * 2 - 1;
+        const v = (y / (size - 1)) * 2 - 1;
+        const r2 = u * u + v * v;
+        const i = (y * size + x) * 4;
+        img.data[i]     = Math.max(0, Math.min(255, Math.round(128 - u * k * r2 * 128)));
+        img.data[i + 1] = Math.max(0, Math.min(255, Math.round(128 - v * k * r2 * 128)));
+        img.data[i + 2] = 128;
+        img.data[i + 3] = 255;
+      }
+    }
+    ctx.putImageData(img, 0, 0);
+    barrelMapUri = canvas.toDataURL();
+  });
+
   export function getPreviewElement(): HTMLDivElement {
     return previewEl;
   }
@@ -370,7 +397,7 @@
         {appState.crtEnabled ? `crt-scanlines crt-phosphor crt-curvature ${appState.transparentBg ? '' : 'crt-vignette'}` : ''}
         {appState.crtEnabled && appState.crtFlicker > 0 ? 'crt-flicker' : ''}"
       style="background-color: {appState.transparentBg ? 'transparent' : appState.bgColor}; padding: 1.5rem;
-        {appState.crtEnabled ? `--crt-curve: ${appState.crtCurvature}; --crt-flicker-speed: ${Math.max(0.05, 0.2 - appState.crtFlicker * 0.0015)}s; --crt-flicker-opacity: ${1 - appState.crtFlicker * 0.003};` : ''}"
+        {appState.crtEnabled ? `--crt-curve: ${appState.crtCurvature}; --crt-flicker-speed: ${Math.max(0.05, 0.2 - appState.crtFlicker * 0.0015)}s; --crt-flicker-opacity: ${1 - appState.crtFlicker * 0.003};` : ''}{appState.crtEnabled && appState.crtCurvature > 0 && barrelMapUri ? ' filter: url(#crt-barrel);' : ''}"
     >
       {#if appState.pixelation > 0}
       <svg width="0" height="0" style="position:absolute">
@@ -381,6 +408,17 @@
             <feFuncG type="discrete" tableValues="0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1" />
             <feFuncB type="discrete" tableValues="0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1" />
           </feComponentTransfer>
+        </filter>
+      </svg>
+      {/if}
+      {#if appState.crtEnabled && appState.crtCurvature > 0 && barrelMapUri}
+      <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+        <filter id="crt-barrel" x="-5%" y="-5%" width="110%" height="110%" color-interpolation-filters="sRGB">
+          <feImage href={barrelMapUri} result="barrelMap" preserveAspectRatio="none"
+                   x="0%" y="0%" width="100%" height="100%" />
+          <feDisplacementMap in="SourceGraphic" in2="barrelMap"
+                             scale={appState.crtCurvature * 0.8}
+                             xChannelSelector="R" yChannelSelector="G" />
         </filter>
       </svg>
       {/if}
