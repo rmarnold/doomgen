@@ -61,8 +61,8 @@ function cropToContent(dataUrl: string, bgColor?: string): Promise<string> {
         return;
       }
 
-      // Add a small padding (4px) around the content
-      const pad = 4;
+      // Add comfortable padding around the content
+      const pad = 24;
       top = Math.max(0, top - pad);
       left = Math.max(0, left - pad);
       bottom = Math.min(height - 1, bottom + pad);
