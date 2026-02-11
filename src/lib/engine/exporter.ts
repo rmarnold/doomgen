@@ -230,6 +230,206 @@ export async function downloadWebp(element: HTMLElement, filename: string, optio
 }
 
 /**
+ * Options for animated WebP export.
+ */
+export interface AnimatedExportOptions {
+  bgColor: string;
+  colorShiftSpeed: number;
+  crtEnabled: boolean;
+  crtFlicker: number;
+  transparentBg?: boolean;
+}
+
+/**
+ * Lazy WebPXMux singleton - loads WASM library on first use.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let xMuxInstance: any = null;
+let xMuxLoading: Promise<any> | null = null;
+
+async function getWebPXMux() {
+  if (xMuxInstance) return xMuxInstance;
+  if (xMuxLoading) return xMuxLoading;
+  xMuxLoading = (async () => {
+    const mod = await import('webpxmux');
+    const create = mod.default;
+    const inst = create('/webpxmux.wasm');
+    await inst.waitRuntime();
+    xMuxInstance = inst;
+    return inst;
+  })();
+  return xMuxLoading;
+}
+
+/**
+ * Convert canvas RGBA byte array to Uint32Array in 0xRRGGBBAA format.
+ */
+function rgbaToUint32(data: Uint8ClampedArray, pixelCount: number): Uint32Array {
+  const result = new Uint32Array(pixelCount);
+  for (let i = 0; i < pixelCount; i++) {
+    const o = i * 4;
+    result[i] = (data[o] << 24) | (data[o + 1] << 16) | (data[o + 2] << 8) | data[o + 3];
+  }
+  return result;
+}
+
+/**
+ * Convert PNG data URL to RGBA Uint32Array for webpxmux encoder.
+ */
+function dataUrlToRgba(dataUrl: string, bg?: string): Promise<{ rgba: Uint32Array; width: number; height: number }> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = img.width;
+      canvas.height = img.height;
+      const ctx = canvas.getContext('2d')!;
+      if (bg) {
+        ctx.fillStyle = bg;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+      }
+      ctx.drawImage(img, 0, 0);
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      resolve({
+        rgba: rgbaToUint32(imageData.data, canvas.width * canvas.height),
+        width: canvas.width,
+        height: canvas.height,
+      });
+    };
+    img.onerror = reject;
+    img.src = dataUrl;
+  });
+}
+
+/**
+ * Triangular wave function for CRT flicker opacity calculation.
+ */
+function flickerOpacity(t: number, duration: number, minOpacity: number): number {
+  const p = (t % duration) / duration;
+  return p < 0.5
+    ? 1 - (1 - minOpacity) * p * 2
+    : minOpacity + (1 - minOpacity) * (p - 0.5) * 2;
+}
+
+/**
+ * Download preview DOM element as animated WebP file with color shift and CRT flicker effects.
+ */
+export async function downloadAnimatedWebp(
+  element: HTMLElement,
+  filename: string,
+  options: AnimatedExportOptions,
+  onProgress?: (frame: number, total: number) => void,
+): Promise<void> {
+  const { bgColor, colorShiftSpeed, crtEnabled, crtFlicker, transparentBg } = options;
+  const bg = bgColor || '#0a0a0a';
+  const target = resolveTarget(element);
+
+  // Calculate animation durations (same formulas as CSS/SVG/HTML exports)
+  const colorShiftDuration = colorShiftSpeed > 0 ? Math.max(0.5, 10 - colorShiftSpeed * 0.095) : 0;
+  const flickerDuration = crtEnabled && crtFlicker > 0 ? Math.max(0.05, 0.2 - crtFlicker * 0.0015) : 0;
+  const flickerMin = crtEnabled && crtFlicker > 0 ? 1 - crtFlicker * 0.003 : 1;
+
+  // If no animations active, fall back to static WebP
+  if (colorShiftDuration === 0 && flickerDuration === 0) {
+    return downloadWebp(element, filename, { transparentBg, bgColor: bg });
+  }
+
+  const fps = 10;
+  const totalDuration = colorShiftDuration > 0 ? colorShiftDuration : flickerDuration;
+  const frameCount = Math.ceil(totalDuration * fps);
+  const frameDurationMs = Math.round(1000 / fps);
+
+  // Find animation elements in the DOM
+  // Structure: [data-export-target].crt-flicker > .color-shift > pre
+  const colorShiftEl = target.querySelector('.color-shift') as HTMLElement | null;
+  const flickerEl = target.classList.contains('crt-flicker')
+    ? target
+    : (target.querySelector('.crt-flicker') as HTMLElement | null);
+
+  // Save original inline styles for restoration
+  const origColorShiftStyle = colorShiftEl?.getAttribute('style') || '';
+  const origFlickerStyle = flickerEl?.getAttribute('style') || '';
+
+  // Initialize WebPXMux WASM encoder
+  const xMux = await getWebPXMux();
+
+  interface FrameData {
+    duration: number;
+    isKeyframe: boolean;
+    rgba: Uint32Array;
+  }
+  const frames: FrameData[] = [];
+  let frameWidth = 0;
+  let frameHeight = 0;
+
+  try {
+    for (let i = 0; i < frameCount; i++) {
+      const t = (i / frameCount) * totalDuration;
+
+      // Step color shift animation
+      if (colorShiftEl && colorShiftDuration > 0) {
+        const deg = (t / colorShiftDuration) * 360;
+        colorShiftEl.style.animation = 'none';
+        colorShiftEl.style.filter = `hue-rotate(${deg}deg)`;
+      }
+
+      // Step CRT flicker animation
+      if (flickerEl && flickerDuration > 0) {
+        const opacity = flickerOpacity(t, flickerDuration, flickerMin);
+        flickerEl.style.animation = 'none';
+        flickerEl.style.opacity = String(opacity);
+      }
+
+      // Let browser repaint
+      await new Promise<void>(r => requestAnimationFrame(() => r()));
+
+      // Capture frame
+      const dataUrl = await toPng(target, {
+        pixelRatio: 2,
+        backgroundColor: transparentBg ? undefined : bg,
+      });
+
+      const { rgba, width, height } = await dataUrlToRgba(dataUrl, transparentBg ? undefined : bg);
+
+      if (i === 0) {
+        frameWidth = width;
+        frameHeight = height;
+      }
+
+      frames.push({
+        duration: frameDurationMs,
+        isKeyframe: i === 0,
+        rgba,
+      });
+
+      onProgress?.(i + 1, frameCount);
+    }
+  } finally {
+    // Restore original styles
+    if (colorShiftEl) colorShiftEl.setAttribute('style', origColorShiftStyle);
+    if (flickerEl) flickerEl.setAttribute('style', origFlickerStyle);
+  }
+
+  // Encode animated WebP
+  const webpData = await xMux.encodeFrames({
+    frameCount: frames.length,
+    width: frameWidth,
+    height: frameHeight,
+    loopCount: 0, // infinite loop
+    bgColor: 0x00000000,
+    frames,
+  });
+
+  // Download
+  const blob = new Blob([new Uint8Array(webpData)], { type: 'image/webp' });
+  const link = document.createElement('a');
+  link.download = `${filename}.webp`;
+  link.href = URL.createObjectURL(blob);
+  link.click();
+  URL.revokeObjectURL(link.href);
+}
+
+/**
  * SVG export options for including visual effects.
  */
 export interface SvgExportOptions {

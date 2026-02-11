@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { copyText, copyImage, downloadPng, downloadWebp, downloadSvg, downloadAnsi, downloadBanner, downloadHtml, downloadJson, importJson } from '$lib/engine/exporter';
+  import { copyText, copyImage, downloadPng, downloadAnimatedWebp, downloadSvg, downloadAnsi, downloadBanner, downloadHtml, downloadJson, importJson } from '$lib/engine/exporter';
   import type { ColoredLine } from '$lib/engine/colorizer';
   import { appState } from '$lib/stores/state.svelte';
   import { getPaletteById } from '$lib/theme/palettes';
@@ -17,6 +17,7 @@
   let transparentBg = $state(false);
   let feedback = $state<string | null>(null);
   let feedbackTimer: ReturnType<typeof setTimeout>;
+  let webpExporting = $state(false);
   let fileInputEl: HTMLInputElement;
 
   function showFeedback(msg: string) {
@@ -56,11 +57,25 @@
 
   async function handleDownloadWebp() {
     if (!previewElement) return;
+    webpExporting = true;
     try {
-      await downloadWebp(previewElement, filename, { transparentBg, bgColor: appState.bgColor });
+      await downloadAnimatedWebp(
+        previewElement,
+        filename,
+        {
+          bgColor: appState.bgColor,
+          colorShiftSpeed: appState.colorShiftSpeed,
+          crtEnabled: appState.crtEnabled,
+          crtFlicker: appState.crtFlicker,
+          transparentBg,
+        },
+        (frame, total) => showFeedback(`WebP ${frame}/${total}`),
+      );
       showFeedback('WebP downloaded!');
     } catch {
       showFeedback('Download failed');
+    } finally {
+      webpExporting = false;
     }
   }
 
@@ -158,7 +173,7 @@
     Transparent
   </label>
   <button class={btnClass} onclick={handleDownloadPng} disabled={!previewElement}>PNG</button>
-  <button class={btnClass} onclick={handleDownloadWebp} disabled={!previewElement}>WebP</button>
+  <button class={btnClass} onclick={handleDownloadWebp} disabled={!previewElement || webpExporting}>{webpExporting ? 'Exporting...' : 'WebP'}</button>
   <button class={btnClass} onclick={handleCopyImage} disabled={!previewElement}>Copy Image</button>
   <button class={btnClass} onclick={handleDownloadSvg}>SVG</button>
   <button class={btnClass} onclick={handleDownloadAnsi}>ANSI</button>

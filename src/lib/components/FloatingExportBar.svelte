@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { copyText, copyImage, downloadPng, downloadWebp, downloadSvg, downloadAnsi, downloadBanner, downloadHtml, downloadJson, importJson } from '$lib/engine/exporter';
+  import { copyText, copyImage, downloadPng, downloadAnimatedWebp, downloadSvg, downloadAnsi, downloadBanner, downloadHtml, downloadJson, importJson } from '$lib/engine/exporter';
   import type { ColoredLine } from '$lib/engine/colorizer';
   import { appState } from '$lib/stores/state.svelte';
   import { getPaletteById } from '$lib/theme/palettes';
@@ -17,6 +17,7 @@
   let transparentBg = $state(false);
   let showSuccess = $state(false);
   let successTimer: ReturnType<typeof setTimeout>;
+  let webpExporting = $state(false);
   let fileInputEl: HTMLInputElement;
 
   function showFeedback() {
@@ -56,11 +57,24 @@
 
   async function handleDownloadWebp() {
     if (!previewElement) return;
+    webpExporting = true;
     try {
-      await downloadWebp(previewElement, filename, { transparentBg, bgColor: appState.bgColor });
+      await downloadAnimatedWebp(
+        previewElement,
+        filename,
+        {
+          bgColor: appState.bgColor,
+          colorShiftSpeed: appState.colorShiftSpeed,
+          crtEnabled: appState.crtEnabled,
+          crtFlicker: appState.crtFlicker,
+          transparentBg,
+        },
+      );
       showFeedback();
     } catch {
       // Silent failure for floating bar
+    } finally {
+      webpExporting = false;
     }
   }
 
@@ -201,11 +215,11 @@
 
   <!-- WebP Download Button -->
   <button
-    class="doom-btn p-1.5"
+    class="doom-btn p-1.5 {webpExporting ? 'animate-pulse text-doom-orange' : ''}"
     onclick={handleDownloadWebp}
-    disabled={!previewElement}
-    title="Download WebP (web-optimized)"
-    aria-label="Download WebP"
+    disabled={!previewElement || webpExporting}
+    title={webpExporting ? 'Exporting animated WebP...' : 'Download Animated WebP'}
+    aria-label={webpExporting ? 'Exporting animated WebP' : 'Download Animated WebP'}
   >
     <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
       <rect x="2" y="3" width="12" height="10" rx="1" />
