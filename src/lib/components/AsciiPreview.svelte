@@ -4,9 +4,55 @@
   import { applyDrip, applyDistress } from '$lib/engine/effects';
   import { appState } from '$lib/stores/state.svelte';
   import { getPaletteById } from '$lib/theme/palettes';
-  import { tick } from 'svelte';
+  import { tick, onMount } from 'svelte';
 
   let asciiResult = $state<RenderResult | null>(null);
+
+  // CRT barrel distortion displacement map (generated once on mount)
+  let barrelMapUrl = $state('');
+
+  onMount(() => {
+    barrelMapUrl = generateBarrelMap();
+  });
+
+  /**
+   * Generate a radial displacement map for barrel distortion.
+   * R channel = X displacement, G channel = Y displacement.
+   * Center = 128 (neutral), edges push outward from center.
+   */
+  function generateBarrelMap(size: number = 256): string {
+    const canvas = document.createElement('canvas');
+    canvas.width = size;
+    canvas.height = size;
+    const ctx = canvas.getContext('2d')!;
+    const imageData = ctx.createImageData(size, size);
+    const data = imageData.data;
+    const cx = size / 2;
+    const cy = size / 2;
+    const maxDist = Math.sqrt(cx * cx + cy * cy);
+
+    for (let y = 0; y < size; y++) {
+      for (let x = 0; x < size; x++) {
+        const dx = x - cx;
+        const dy = y - cy;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        const norm = dist / maxDist;
+
+        // Quadratic barrel: stronger push at edges
+        const angle = Math.atan2(dy, dx);
+        const strength = norm * norm;
+
+        const i = (y * size + x) * 4;
+        data[i]     = Math.round(128 + Math.cos(angle) * strength * 127); // R = X
+        data[i + 1] = Math.round(128 + Math.sin(angle) * strength * 127); // G = Y
+        data[i + 2] = 128;
+        data[i + 3] = 255;
+      }
+    }
+
+    ctx.putImageData(imageData, 0, 0);
+    return canvas.toDataURL();
+  }
   let coloredLines = $state<ColoredLine[]>([]);
   let glowColor = $state('#ff3f3f');
   let error = $state<string | null>(null);
@@ -370,8 +416,17 @@
         {appState.crtEnabled ? `crt-scanlines crt-phosphor crt-curvature ${appState.transparentBg ? '' : 'crt-vignette'}` : ''}
         {appState.crtEnabled && appState.crtFlicker > 0 ? 'crt-flicker' : ''}"
       style="background-color: {appState.transparentBg ? 'transparent' : appState.bgColor}; padding: 1.5rem;
-        {appState.crtEnabled ? `--crt-curve: ${appState.crtCurvature}; --crt-flicker-speed: ${Math.max(0.05, 0.2 - appState.crtFlicker * 0.0015)}s; --crt-flicker-opacity: ${1 - appState.crtFlicker * 0.003};` : ''}"
+        {appState.crtEnabled ? `--crt-curve: ${appState.crtCurvature}; --crt-flicker-speed: ${Math.max(0.05, 0.2 - appState.crtFlicker * 0.0015)}s; --crt-flicker-opacity: ${1 - appState.crtFlicker * 0.003};` : ''}
+        {appState.crtEnabled && appState.crtCurvature > 0 && barrelMapUrl ? `filter: url(#crt-barrel-distort);` : ''}"
     >
+      {#if appState.crtEnabled && appState.crtCurvature > 0 && barrelMapUrl}
+      <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+        <filter id="crt-barrel-distort" x="-5%" y="-5%" width="110%" height="110%">
+          <feImage href={barrelMapUrl} result="barrel-map" preserveAspectRatio="none" x="0%" y="0%" width="100%" height="100%" />
+          <feDisplacementMap in="SourceGraphic" in2="barrel-map" scale={appState.crtCurvature * 0.5} xChannelSelector="R" yChannelSelector="G" />
+        </filter>
+      </svg>
+      {/if}
       {#if appState.pixelation > 0}
       <svg width="0" height="0" style="position:absolute">
         <filter id="doomgen-pixelate">
