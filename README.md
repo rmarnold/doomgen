@@ -4,6 +4,8 @@
 
 <p align="center">
   <a href="https://github.com/rmarnold/doomgen/actions/workflows/deploy.yml"><img src="https://github.com/rmarnold/doomgen/actions/workflows/deploy.yml/badge.svg" alt="Deploy to GitHub Pages" /></a>
+  <br/>
+  <a href="https://rmarnold.github.io/doomgen/"><strong>Live Demo</strong></a>
 </p>
 
 ASCII art generator with DOOM aesthetics. Transform text into stylized ASCII art with authentic DOOM color palettes and visual effects.
