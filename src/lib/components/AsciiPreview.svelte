@@ -399,9 +399,9 @@
 <div
   bind:this={previewEl}
   class="relative flex min-h-[250px] flex-col items-center justify-center overflow-auto p-6 sm:min-h-[350px]
-    {appState.transparentBg ? '' : 'metal-panel-inset'}
+    {appState.transparentBg || (appState.crtEnabled && appState.crtCurvature > 0) ? '' : 'metal-panel-inset'}
     {!appState.transparentBg && !appState.crtEnabled ? 'scanlines preview-glow-border' : ''}"
-  style="background-color: {appState.transparentBg ? 'transparent' : appState.bgColor}; {appState.transparentBg ? 'background-image: repeating-conic-gradient(#222 0% 25%, #181818 0% 50%); background-size: 16px 16px;' : ''}"
+  style="background-color: {appState.transparentBg ? 'transparent' : (appState.crtEnabled && appState.crtCurvature > 0 ? 'transparent' : appState.bgColor)}; {appState.transparentBg ? 'background-image: repeating-conic-gradient(#222 0% 25%, #181818 0% 50%); background-size: 16px 16px;' : ''}"
 >
   {#if loading}
     <p class="animate-pulse text-doom-text-muted">Rendering...</p>
