@@ -248,7 +248,7 @@
 
   $effect(() => {
     const freq = appState.crtPowerLoss;
-    if (freq <= 0 || !appState.animationsEnabled) return;
+    if (freq <= 0 || !appState.crtEnabled || !appState.animationsEnabled) return;
 
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (prefersReducedMotion) return;
@@ -311,7 +311,7 @@
 
   $effect(() => {
     const freq = appState.crtScreenBlip;
-    if (freq <= 0 || !appState.animationsEnabled) return;
+    if (freq <= 0 || !appState.crtEnabled || !appState.animationsEnabled) return;
 
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (prefersReducedMotion) return;
