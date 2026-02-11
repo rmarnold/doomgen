@@ -363,14 +363,19 @@ export function downloadSvg(coloredLines: ColoredLine[], filename: string, optio
     overlays.push(`    <rect width="${width}" height="${height}" fill="url(#vig)"/>`);
   }
 
-  // Build text content block — pixelation wraps outside glow/shadow
-  const textBlock = pixelation > 0
-    ? `    <g${pxFilterAttr}>\n      <g${filterAttr}${contentClassAttr}>\n${textElements}\n      </g>\n    </g>`
-    : `    <g${filterAttr}${contentClassAttr}>\n${textElements}\n    </g>`;
+  // Build text content block — flicker > pixelation > glow/shadow > text
+  // Flicker wraps only the text content, NOT the background
+  let textBlock: string;
+  const innerGroup = `<g${filterAttr}${contentClassAttr}>\n${textElements}\n      </g>`;
+  if (pixelation > 0) {
+    textBlock = `    <g${flickerClass}>\n      <g${pxFilterAttr}>\n        ${innerGroup}\n      </g>\n    </g>`;
+  } else {
+    textBlock = `    <g${flickerClass}>\n      ${innerGroup}\n    </g>`;
+  }
 
   const svg = `<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}" width="${width}" height="${height}">
-${defsBlock}${styleBlock}  <g${clipAttr}${flickerClass}>
+${defsBlock}${styleBlock}  <g${clipAttr}>
     <rect width="100%" height="100%" fill="${bgColor}"/>
 ${textBlock}
 ${overlays.length > 0 ? overlays.join('\n') + '\n' : ''}  </g>
