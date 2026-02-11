@@ -72,7 +72,8 @@
         (frame, total) => showFeedback(`WebP ${frame}/${total}`),
       );
       showFeedback('WebP downloaded!');
-    } catch {
+    } catch (e) {
+      console.error('Animated WebP export failed:', e);
       showFeedback('Download failed');
     } finally {
       webpExporting = false;

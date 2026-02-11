@@ -71,8 +71,8 @@
         },
       );
       showFeedback();
-    } catch {
-      // Silent failure for floating bar
+    } catch (e) {
+      console.error('Animated WebP export failed:', e);
     } finally {
       webpExporting = false;
     }

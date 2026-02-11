@@ -253,7 +253,11 @@ async function getWebPXMux() {
   if (xMuxLoading) return xMuxLoading;
   xMuxLoading = (async () => {
     const mod = await import('webpxmux');
-    const create = mod.default;
+    // Handle CJS interop: default might be the factory or a wrapper with .default
+    const create = typeof mod.default === 'function' ? mod.default
+      : typeof mod.default?.default === 'function' ? mod.default.default
+      : null;
+    if (!create) throw new Error(`webpxmux: unexpected module shape: ${Object.keys(mod.default ?? mod)}`);
     const inst = create(`${base}/webpxmux.wasm`);
     await inst.waitRuntime();
     xMuxInstance = inst;
