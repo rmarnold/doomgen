@@ -95,11 +95,11 @@ export async function copyText(lines: string[]): Promise<void> {
 }
 
 /**
- * Resolve the best capture target: prefer the inner <pre> for a tight crop,
- * fall back to the container if no <pre> is found.
+ * Resolve the best capture target: prefer the export-target wrapper (includes CRT/effects),
+ * fall back to <pre> for tight crop, then the container itself.
  */
 function resolveTarget(element: HTMLElement): HTMLElement {
-  return element.querySelector('pre') ?? element;
+  return element.querySelector('[data-export-target]') ?? element.querySelector('pre') ?? element;
 }
 
 /**
@@ -139,13 +139,79 @@ export async function downloadPng(element: HTMLElement, filename: string, option
 }
 
 /**
- * Generate and download SVG file.
+ * SVG export options for including visual effects.
  */
-export function downloadSvg(coloredLines: ColoredLine[], filename: string, bgColor = '#0a0a0a'): void {
+export interface SvgExportOptions {
+  bgColor: string;
+  glowIntensity: number;
+  glowColor: string;
+  shadowOffset: number;
+  crtEnabled: boolean;
+  crtCurvature: number;
+}
+
+/**
+ * Generate and download SVG file with visual effects.
+ */
+export function downloadSvg(coloredLines: ColoredLine[], filename: string, options: SvgExportOptions): void {
+  const { bgColor, glowIntensity, glowColor, shadowOffset, crtEnabled, crtCurvature } = options;
   const lineHeight = 16;
   const charWidth = 9.6;
   const width = Math.max(...coloredLines.map((l) => l.length)) * charWidth + 40;
   const height = coloredLines.length * lineHeight + 40;
+
+  // Build SVG filter definitions
+  const filterParts: string[] = [];
+  let textFilterId = '';
+
+  if (glowIntensity > 0 || shadowOffset > 0) {
+    textFilterId = 'textEffects';
+    const parts: string[] = [];
+
+    if (glowIntensity > 0) {
+      const glowRadius = glowIntensity * 0.5;
+      parts.push(`    <feGaussianBlur in="SourceGraphic" stdDeviation="${glowRadius}" result="glow"/>`);
+      parts.push(`    <feFlood flood-color="${glowColor}" flood-opacity="0.8" result="glowColor"/>`);
+      parts.push(`    <feComposite in="glowColor" in2="glow" operator="in" result="coloredGlow"/>`);
+    }
+
+    if (shadowOffset > 0) {
+      parts.push(`    <feOffset in="SourceGraphic" dx="${shadowOffset}" dy="${shadowOffset}" result="shadowOffset"/>`);
+      parts.push(`    <feFlood flood-color="rgba(0,0,0,0.8)" result="shadowColor"/>`);
+      parts.push(`    <feComposite in="shadowColor" in2="shadowOffset" operator="in" result="shadow"/>`);
+    }
+
+    // Merge layers: shadow (back), glow, original text (front)
+    const mergeNodes: string[] = [];
+    if (shadowOffset > 0) mergeNodes.push('      <feMergeNode in="shadow"/>');
+    if (glowIntensity > 0) mergeNodes.push('      <feMergeNode in="coloredGlow"/>');
+    mergeNodes.push('      <feMergeNode in="SourceGraphic"/>');
+    parts.push(`    <feMerge>\n${mergeNodes.join('\n')}\n    </feMerge>`);
+
+    filterParts.push(`  <filter id="${textFilterId}" x="-50%" y="-50%" width="200%" height="200%">\n${parts.join('\n')}\n  </filter>`);
+  }
+
+  // CRT scanlines pattern
+  if (crtEnabled) {
+    filterParts.push(`  <pattern id="crtScanlines" patternUnits="userSpaceOnUse" width="1" height="2">
+    <rect width="1" height="1" fill="rgba(0,0,0,0.3)"/>
+  </pattern>`);
+  }
+
+  const defsSection = filterParts.length > 0
+    ? `<defs>\n${filterParts.join('\n')}\n</defs>`
+    : '';
+
+  // Clip path for CRT curvature
+  const borderRadius = crtEnabled && crtCurvature > 0 ? crtCurvature * 0.12 : 0;
+  const clipPathDef = borderRadius > 0
+    ? `\n  <clipPath id="crtClip"><rect width="${width}" height="${height}" rx="${borderRadius}" ry="${borderRadius}"/></clipPath>`
+    : '';
+  const clipAttr = borderRadius > 0 ? ' clip-path="url(#crtClip)"' : '';
+
+  if (clipPathDef && defsSection) {
+    // Insert clip path into existing defs
+  }
 
   const textElements = coloredLines
     .map((line, row) => {
@@ -166,10 +232,40 @@ export function downloadSvg(coloredLines: ColoredLine[], filename: string, bgCol
     })
     .join('\n  ');
 
+  const textFilterAttr = textFilterId ? ` filter="url(#${textFilterId})"` : '';
+
+  // CRT overlays
+  const crtOverlays: string[] = [];
+  if (crtEnabled) {
+    // Scanlines
+    crtOverlays.push(`  <rect width="${width}" height="${height}" fill="url(#crtScanlines)" opacity="1"/>`);
+    // Vignette (radial gradient darkening at edges)
+    crtOverlays.push(`  <radialGradient id="vignette" cx="50%" cy="50%" r="70%">
+    <stop offset="0%" stop-color="transparent"/>
+    <stop offset="100%" stop-color="rgba(0,0,0,0.5)"/>
+  </radialGradient>
+  <rect width="${width}" height="${height}" fill="url(#vignette)"/>`);
+  }
+
+  // Build full defs including clip path
+  const allDefs: string[] = [];
+  if (filterParts.length > 0 || clipPathDef) {
+    allDefs.push('<defs>');
+    allDefs.push(...filterParts);
+    if (clipPathDef) allDefs.push(`  <clipPath id="crtClip"><rect width="${width}" height="${height}" rx="${borderRadius}" ry="${borderRadius}"/></clipPath>`);
+    allDefs.push('</defs>');
+  }
+
   const svg = `<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}" width="${width}" height="${height}">
-  <rect width="100%" height="100%" fill="${bgColor}"/>
-  ${textElements}
+  ${allDefs.join('\n  ')}
+  <g${clipAttr}>
+    <rect width="100%" height="100%" fill="${bgColor}"/>
+    <g${textFilterAttr}>
+      ${textElements}
+    </g>
+    ${crtOverlays.join('\n  ')}
+  </g>
 </svg>`;
 
   const blob = new Blob([svg], { type: 'image/svg+xml' });
@@ -246,22 +342,40 @@ export interface HtmlExportOptions {
   glowColor: string;
   shadowOffset: number;
   crtEnabled: boolean;
+  crtCurvature: number;
+  crtFlicker: number;
+  pixelation: number;
+  colorShiftSpeed: number;
 }
 
 /**
- * Generate and download standalone HTML file with embedded CSS.
+ * Generate and download standalone HTML file with embedded CSS and all visual effects.
  */
 export function downloadHtml(coloredLines: ColoredLine[], filename: string, options: HtmlExportOptions): void {
-  const { bgColor, glowIntensity, glowColor, shadowOffset, crtEnabled } = options;
+  const { bgColor, glowIntensity, glowColor, shadowOffset, crtEnabled, crtCurvature, crtFlicker, pixelation, colorShiftSpeed } = options;
 
   const glowCss = glowIntensity > 0
     ? `text-shadow: 0 0 ${glowIntensity * 0.15}px ${glowColor}, 0 0 ${glowIntensity * 0.5}px ${glowColor};`
     : '';
-  const shadowCss = shadowOffset > 0
-    ? `filter: drop-shadow(${shadowOffset}px ${shadowOffset}px 0px rgba(0,0,0,0.8));`
-    : '';
-  const scanlinesCss = crtEnabled
-    ? `
+
+  // Build filter list for pre (pixelation + shadow)
+  const preFilters: string[] = [];
+  if (pixelation > 0) preFilters.push('url(#doomgen-pixelate)');
+  if (shadowOffset > 0) preFilters.push(`drop-shadow(${shadowOffset}px ${shadowOffset}px 0px rgba(0,0,0,0.8))`);
+  const filterCss = preFilters.length > 0 ? `filter: ${preFilters.join(' ')};` : '';
+
+  // CRT effect CSS
+  let crtCss = '';
+  if (crtEnabled) {
+    const curvatureRadius = crtCurvature * 0.12;
+    const flickerSpeed = Math.max(0.05, 0.2 - crtFlicker * 0.0015);
+    const flickerOpacity = 1 - crtFlicker * 0.003;
+
+    crtCss = `
+    .container {
+      ${curvatureRadius > 0 ? `border-radius: ${curvatureRadius}px; overflow: hidden;` : ''}
+      box-shadow: inset 0 0 80px 20px rgba(0,0,0,0.5), 0 0 10px rgba(255,50,30,0.2), inset 0 2px 4px rgba(0,0,0,0.5);
+    }
     .container::before {
       content: '';
       position: absolute;
@@ -269,7 +383,41 @@ export function downloadHtml(coloredLines: ColoredLine[], filename: string, opti
       background: repeating-linear-gradient(0deg, rgba(0,0,0,0.3), rgba(0,0,0,0.3) 1px, transparent 1px, transparent 2px);
       pointer-events: none;
       z-index: 10;
-    }`
+    }
+    .container::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: repeating-linear-gradient(90deg, rgba(255,0,0,0.03), rgba(0,255,0,0.03) 1px, rgba(0,0,255,0.03) 2px, transparent 3px);
+      pointer-events: none;
+      z-index: 11;
+    }${crtFlicker > 0 ? `
+    .container {
+      animation: crt-flicker ${flickerSpeed}s infinite;
+    }
+    @keyframes crt-flicker {
+      0%, 100% { opacity: 1; }
+      50% { opacity: ${flickerOpacity}; }
+    }` : ''}`;
+  }
+
+  // Color shift CSS
+  let colorShiftCss = '';
+  if (colorShiftSpeed > 0) {
+    const duration = Math.max(0.5, 10 - colorShiftSpeed * 0.095);
+    colorShiftCss = `
+    .color-shift {
+      animation: color-shift-cycle ${duration}s linear infinite;
+    }
+    @keyframes color-shift-cycle {
+      from { filter: hue-rotate(0deg); }
+      to { filter: hue-rotate(360deg); }
+    }`;
+  }
+
+  // Pixelation SVG filter
+  const pixelationSvg = pixelation > 0
+    ? `<svg width="0" height="0" style="position:absolute"><filter id="doomgen-pixelate"><feGaussianBlur stdDeviation="${pixelation}" in="SourceGraphic" result="blurred"/><feComponentTransfer in="blurred"><feFuncR type="discrete" tableValues="0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1"/><feFuncG type="discrete" tableValues="0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1"/><feFuncB type="discrete" tableValues="0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1"/></feComponentTransfer></filter></svg>`
     : '';
 
   const spans = coloredLines
@@ -307,7 +455,7 @@ export function downloadHtml(coloredLines: ColoredLine[], filename: string, opti
   .container {
     position: relative;
     padding: 2rem;
-  }${scanlinesCss}
+  }${crtCss}${colorShiftCss}
   pre {
     font-family: 'JetBrains Mono', monospace;
     font-size: 14px;
@@ -315,13 +463,16 @@ export function downloadHtml(coloredLines: ColoredLine[], filename: string, opti
     white-space: pre;
     margin: 0;
     ${glowCss}
-    ${shadowCss}
+    ${filterCss}
   }
 </style>
 </head>
 <body>
+${pixelationSvg}
 <div class="container">
+${colorShiftSpeed > 0 ? '<div class="color-shift">' : ''}
 <pre>${spans}</pre>
+${colorShiftSpeed > 0 ? '</div>' : ''}
 </div>
 </body>
 </html>`;

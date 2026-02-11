@@ -151,27 +151,11 @@
   }
 </script>
 
-<!-- SVG filter for pixelation effect -->
-{#if appState.pixelation > 0}
-<svg width="0" height="0" style="position:absolute">
-  <filter id="doomgen-pixelate">
-    <feGaussianBlur stdDeviation="{appState.pixelation}" in="SourceGraphic" result="blurred" />
-    <feComponentTransfer in="blurred">
-      <feFuncR type="discrete" tableValues="0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1" />
-      <feFuncG type="discrete" tableValues="0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1" />
-      <feFuncB type="discrete" tableValues="0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1" />
-    </feComponentTransfer>
-  </filter>
-</svg>
-{/if}
-
 <div
   bind:this={previewEl}
-  class="metal-panel-inset relative flex min-h-[250px] flex-col overflow-auto p-6 sm:min-h-[350px]
-    {appState.crtEnabled ? 'crt-scanlines crt-phosphor crt-curvature crt-vignette' : 'scanlines preview-glow-border'}
-    {appState.crtEnabled && appState.crtFlicker > 0 ? 'crt-flicker' : ''}"
-  style="background-color: {appState.bgColor};
-    {appState.crtEnabled ? `--crt-curve: ${appState.crtCurvature}; --crt-flicker-speed: ${Math.max(0.05, 0.2 - appState.crtFlicker * 0.0015)}s; --crt-flicker-opacity: ${1 - appState.crtFlicker * 0.003};` : ''}"
+  class="metal-panel-inset relative flex min-h-[250px] flex-col items-center justify-center overflow-auto p-6 sm:min-h-[350px]
+    {appState.crtEnabled ? '' : 'scanlines preview-glow-border'}"
+  style="background-color: {appState.bgColor};"
 >
   {#if loading}
     <p class="animate-pulse text-doom-text-muted">Rendering...</p>
@@ -182,17 +166,38 @@
       appState.pixelation > 0 ? 'url(#doomgen-pixelate)' : '',
       appState.shadowOffset > 0 ? `drop-shadow(${appState.shadowOffset}px ${appState.shadowOffset}px 0px rgba(0,0,0,0.8))` : '',
     ].filter(Boolean).join(' ')}
-    <div class={appState.colorShiftSpeed > 0 ? 'color-shift' : ''} style={appState.colorShiftSpeed > 0 ? `--color-shift-duration: ${Math.max(0.5, 10 - appState.colorShiftSpeed * 0.095)}s` : ''}>
-      <pre
-        bind:this={preRef}
-        class="whitespace-pre font-mono leading-none {appState.glowIntensity > 0 ? 'ascii-glow' : ''}"
-        style="font-size: {appState.zoom > 0 ? Math.max(4, Math.round(14 * appState.zoom / 100)) + 'px' : (autoFontSize ?? 'clamp(0.45rem, 1.2vw, 0.875rem)')};{filters
-          ? ` filter: ${filters};`
-          : ''} --glow-color: {glowColor}; --glow-intensity: {appState.glowIntensity};"
-      >{#each coloredLines as line}{#each line as cell}<span
-            style="color: {cell.color}"
-          >{cell.char}</span>{/each}
+    <div
+      data-export-target
+      class="relative
+        {appState.crtEnabled ? 'crt-scanlines crt-phosphor crt-curvature crt-vignette' : ''}
+        {appState.crtEnabled && appState.crtFlicker > 0 ? 'crt-flicker' : ''}"
+      style="background-color: {appState.bgColor}; padding: 1.5rem;
+        {appState.crtEnabled ? `--crt-curve: ${appState.crtCurvature}; --crt-flicker-speed: ${Math.max(0.05, 0.2 - appState.crtFlicker * 0.0015)}s; --crt-flicker-opacity: ${1 - appState.crtFlicker * 0.003};` : ''}"
+    >
+      {#if appState.pixelation > 0}
+      <svg width="0" height="0" style="position:absolute">
+        <filter id="doomgen-pixelate">
+          <feGaussianBlur stdDeviation="{appState.pixelation}" in="SourceGraphic" result="blurred" />
+          <feComponentTransfer in="blurred">
+            <feFuncR type="discrete" tableValues="0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1" />
+            <feFuncG type="discrete" tableValues="0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1" />
+            <feFuncB type="discrete" tableValues="0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1" />
+          </feComponentTransfer>
+        </filter>
+      </svg>
+      {/if}
+      <div class={appState.colorShiftSpeed > 0 ? 'color-shift' : ''} style={appState.colorShiftSpeed > 0 ? `--color-shift-duration: ${Math.max(0.5, 10 - appState.colorShiftSpeed * 0.095)}s` : ''}>
+        <pre
+          bind:this={preRef}
+          class="whitespace-pre font-mono leading-none {appState.glowIntensity > 0 ? 'ascii-glow' : ''}"
+          style="font-size: {appState.zoom > 0 ? Math.max(4, Math.round(14 * appState.zoom / 100)) + 'px' : (autoFontSize ?? 'clamp(0.45rem, 1.2vw, 0.875rem)')};{filters
+            ? ` filter: ${filters};`
+            : ''} --glow-color: {glowColor}; --glow-intensity: {appState.glowIntensity};"
+        >{#each coloredLines as line}{#each line as cell}<span
+              style="color: {cell.color}"
+            >{cell.char}</span>{/each}
 {/each}</pre>
+      </div>
     </div>
   {:else}
     <p class="text-doom-text-muted">Type something to generate ASCII art...</p>

@@ -56,7 +56,16 @@
 
   function handleDownloadSvg() {
     try {
-      downloadSvg(coloredLines, filename, appState.bgColor);
+      const palette = getPaletteById(appState.paletteId);
+      const svgGlowColor = getGlowColor(palette);
+      downloadSvg(coloredLines, filename, {
+        bgColor: appState.bgColor,
+        glowIntensity: appState.glowIntensity,
+        glowColor: svgGlowColor,
+        shadowOffset: appState.shadowOffset,
+        crtEnabled: appState.crtEnabled,
+        crtCurvature: appState.crtCurvature,
+      });
       showFeedback('SVG downloaded!');
     } catch {
       showFeedback('Download failed');
@@ -91,6 +100,10 @@
         glowColor,
         shadowOffset: appState.shadowOffset,
         crtEnabled: appState.crtEnabled,
+        crtCurvature: appState.crtCurvature,
+        crtFlicker: appState.crtFlicker,
+        pixelation: appState.pixelation,
+        colorShiftSpeed: appState.colorShiftSpeed,
       });
       showFeedback('HTML downloaded!');
     } catch {
