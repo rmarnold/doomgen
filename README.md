@@ -1,5 +1,3 @@
-# DOOMGEN
-
 <p align="center">
   <img src="banner.svg" alt="DOOMGEN Banner" />
 </p>
