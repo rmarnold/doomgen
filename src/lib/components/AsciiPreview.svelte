@@ -392,9 +392,7 @@
           style="font-size: {appState.zoom > 0 ? Math.max(4, Math.round(14 * appState.zoom / 100)) + 'px' : (autoFontSize ?? 'clamp(0.45rem, 1.2vw, 0.875rem)')};{filters
             ? ` filter: ${filters};`
             : ''} --glow-color: {glowColor}; --glow-intensity: {appState.glowIntensity};"
-        >{#each coloredLines as line}{#each line as cell}<span
-              style="color: {cell.color}"
-            >{cell.char}</span>{/each}
+        >{#each coloredLines as line, rowIdx}{@const numRows = coloredLines.length}{@const ny = numRows > 1 ? (rowIdx - (numRows - 1) / 2) / ((numRows - 1) / 2) : 0}{@const barrel = appState.crtEnabled && appState.crtCurvature > 0}{@const k = appState.crtCurvature * 0.003}{@const sx = barrel ? 1 + k * ny * ny : 1}{@const ty = barrel ? k * 40 * ny * Math.abs(ny) : 0}<span style="display:block;{barrel ? `transform-origin:center;transform:scaleX(${sx.toFixed(4)}) translateY(${ty.toFixed(2)}px);` : ''}">{#each line as cell}<span style="color: {cell.color}">{cell.char}</span>{/each}</span>
 {/each}</pre>
       </div>
     </div>

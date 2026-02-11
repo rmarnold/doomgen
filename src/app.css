@@ -296,17 +296,11 @@ input[type="range"]:focus::-webkit-slider-thumb {
 
 .crt-curvature {
   --_curve: var(--crt-curve, 50);
-  /* Symmetric convex CRT screen: rounded edges + edge darkening */
-  border-radius: calc(var(--_curve) * 0.3%) / calc(var(--_curve) * 0.5%);
   overflow: hidden;
-  /* Layered inset shadows: dark edges simulate barrel distortion depth */
+  /* Edge darkening to reinforce barrel depth */
   box-shadow:
-    inset 0 0 calc(var(--_curve) * 1.5px) calc(var(--_curve) * 0.5px) rgba(0, 0, 0, 0.6),
-    inset 0 0 calc(var(--_curve) * 4px) calc(var(--_curve) * 1px) rgba(0, 0, 0, 0.3),
-    inset 0 0 calc(var(--_curve) * 8px) calc(var(--_curve) * 2px) rgba(0, 0, 0, 0.15);
-  /* Subtle bulge via 3D transform — center appears closer */
-  transform: perspective(calc(2000px - var(--_curve) * 10px)) translateZ(calc(var(--_curve) * 0.3px));
-  transform-origin: center center;
+    inset 0 0 calc(var(--_curve) * 1.5px) calc(var(--_curve) * 0.5px) rgba(0, 0, 0, 0.5),
+    inset 0 0 calc(var(--_curve) * 4px) calc(var(--_curve) * 1px) rgba(0, 0, 0, 0.25);
 }
 
 .crt-scanlines::before {
