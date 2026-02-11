@@ -1,5 +1,9 @@
 # DOOMGEN
 
+<p align="center">
+  <img src="banner.svg" alt="DOOMGEN Banner" />
+</p>
+
 ASCII art generator with DOOM aesthetics. Transform text into stylized ASCII art with authentic DOOM color palettes and visual effects.
 
 ## Features

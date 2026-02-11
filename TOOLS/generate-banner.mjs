@@ -1,0 +1,115 @@
+#!/usr/bin/env node
+/**
+ * Generate banner.svg from a doomgen JSON export.
+ * Usage: node TOOLS/generate-banner.mjs path/to/export.json
+ */
+import { readFileSync, writeFileSync } from 'fs';
+import { resolve } from 'path';
+
+const jsonPath = process.argv[2];
+if (!jsonPath) {
+  console.error('Usage: node TOOLS/generate-banner.mjs <doomgen-export.json>');
+  process.exit(1);
+}
+
+const data = JSON.parse(readFileSync(resolve(jsonPath), 'utf-8'));
+const { state, coloredLines } = data;
+
+const bgColor = state.bgColor || '#0a0a0a';
+const glowIntensity = state.glowIntensity ?? 0;
+const shadowOffset = state.shadowOffset ?? 0;
+const crtEnabled = state.crtEnabled ?? false;
+const crtCurvature = state.crtCurvature ?? 0;
+
+// Hellfire palette glow color
+const glowColor = '#ffff00';
+
+const lineHeight = 16;
+const charWidth = 9.6;
+const maxLineLen = coloredLines.reduce((max, l) => Math.max(max, l.length), 0);
+const width = maxLineLen * charWidth + 40;
+const height = coloredLines.length * lineHeight + 40;
+
+// Build defs
+const defs = [];
+
+if (glowIntensity > 0 || shadowOffset > 0) {
+  const filterParts = [];
+  if (shadowOffset > 0) {
+    filterParts.push(
+      `      <feOffset in="SourceGraphic" dx="${shadowOffset}" dy="${shadowOffset}" result="off"/>`,
+      `      <feFlood flood-color="#000000" flood-opacity="0.8" result="sc"/>`,
+      `      <feComposite in="sc" in2="off" operator="in" result="shadow"/>`
+    );
+  }
+  if (glowIntensity > 0) {
+    const r = glowIntensity * 0.5;
+    filterParts.push(
+      `      <feGaussianBlur in="SourceGraphic" stdDeviation="${r}" result="blur"/>`,
+      `      <feFlood flood-color="${glowColor}" flood-opacity="0.8" result="gc"/>`,
+      `      <feComposite in="gc" in2="blur" operator="in" result="glow"/>`
+    );
+  }
+  const mergeNodes = [];
+  if (shadowOffset > 0) mergeNodes.push('        <feMergeNode in="shadow"/>');
+  if (glowIntensity > 0) mergeNodes.push('        <feMergeNode in="glow"/>');
+  mergeNodes.push('        <feMergeNode in="SourceGraphic"/>');
+  filterParts.push(`      <feMerge>\n${mergeNodes.join('\n')}\n      </feMerge>`);
+  defs.push(`    <filter id="fx" x="-50%" y="-50%" width="200%" height="200%">\n${filterParts.join('\n')}\n    </filter>`);
+}
+
+if (crtEnabled) {
+  defs.push(`    <pattern id="scan" patternUnits="userSpaceOnUse" width="1" height="2">\n      <rect width="1" height="1" fill="#000" fill-opacity="0.3"/>\n    </pattern>`);
+  defs.push(`    <radialGradient id="vig" cx="50%" cy="50%" r="70%">\n      <stop offset="0%" stop-color="#000" stop-opacity="0"/>\n      <stop offset="100%" stop-color="#000" stop-opacity="0.5"/>\n    </radialGradient>`);
+}
+
+const borderRadius = crtEnabled && crtCurvature > 0 ? crtCurvature * 0.12 : 0;
+if (borderRadius > 0) {
+  defs.push(`    <clipPath id="clip"><rect width="${width}" height="${height}" rx="${borderRadius}" ry="${borderRadius}"/></clipPath>`);
+}
+
+const defsBlock = defs.length > 0 ? `  <defs>\n${defs.join('\n')}\n  </defs>\n` : '';
+const clipAttr = borderRadius > 0 ? ' clip-path="url(#clip)"' : '';
+const filterAttr = (glowIntensity > 0 || shadowOffset > 0) ? ' filter="url(#fx)"' : '';
+
+// Build text elements
+const textElements = coloredLines
+  .map((line, row) => {
+    const spans = line
+      .map((cell, col) => {
+        if (cell.char === ' ' || cell.color === 'transparent') return '';
+        const x = col * charWidth + 20;
+        const escaped = cell.char
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;');
+        return `<tspan x="${x}" fill="${cell.color}">${escaped}</tspan>`;
+      })
+      .filter(Boolean)
+      .join('');
+    if (!spans) return '';
+    const y = row * lineHeight + 20 + lineHeight;
+    return `    <text y="${y}" font-family="'JetBrains Mono', monospace" font-size="14">${spans}</text>`;
+  })
+  .filter(Boolean)
+  .join('\n');
+
+const overlays = [];
+if (crtEnabled) {
+  overlays.push(`    <rect width="${width}" height="${height}" fill="url(#scan)"/>`);
+  overlays.push(`    <rect width="${width}" height="${height}" fill="url(#vig)"/>`);
+}
+
+const svg = `<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}" width="${width}" height="${height}">
+${defsBlock}  <g${clipAttr}>
+    <rect width="100%" height="100%" fill="${bgColor}"/>
+    <g${filterAttr}>
+${textElements}
+    </g>
+${overlays.length > 0 ? overlays.join('\n') + '\n' : ''}  </g>
+</svg>`;
+
+const outPath = resolve(process.cwd(), 'banner.svg');
+writeFileSync(outPath, svg, 'utf-8');
+console.log(`Banner written to ${outPath} (${width}x${height})`);
