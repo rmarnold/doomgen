@@ -456,7 +456,7 @@ pre{font-family:'JetBrains Mono',monospace;font-size:14px;line-height:1;white-sp
   if (crtEnabled) {
     css += `\n.c::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(0deg,rgba(0,0,0,.3),rgba(0,0,0,.3) 1px,transparent 1px,transparent 2px);pointer-events:none;z-index:10}`;
     css += `\n.c::after{content:'';position:absolute;inset:0;background:repeating-linear-gradient(90deg,rgba(255,0,0,.03),rgba(0,255,0,.03) 1px,rgba(0,0,255,.03) 2px,transparent 3px);pointer-events:none;z-index:11}`;
-    css += `\n.c{box-shadow:inset 0 0 80px 20px rgba(0,0,0,.5),0 0 10px rgba(255,50,30,.2),inset 0 2px 4px rgba(0,0,0,.5)}`;
+    css += `\n.c{box-shadow:inset 0 0 80px 20px rgba(0,0,0,.5),inset 0 2px 4px rgba(0,0,0,.5)}`;
   }
 
   // Build character spans
