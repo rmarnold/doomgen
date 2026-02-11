@@ -399,10 +399,19 @@
 <div
   bind:this={previewEl}
   class="relative flex min-h-[250px] flex-col items-center justify-center overflow-auto p-6 sm:min-h-[350px]
-    {appState.transparentBg || (appState.crtEnabled && appState.crtCurvature > 0) ? '' : 'metal-panel-inset'}
+    {appState.transparentBg ? '' : 'metal-panel-inset'}
     {!appState.transparentBg && !appState.crtEnabled ? 'scanlines preview-glow-border' : ''}"
-  style="background-color: {appState.transparentBg ? 'transparent' : (appState.crtEnabled && appState.crtCurvature > 0 ? 'transparent' : appState.bgColor)}; {appState.transparentBg ? 'background-image: repeating-conic-gradient(#222 0% 25%, #181818 0% 50%); background-size: 16px 16px;' : ''}"
+  style="background-color: {appState.transparentBg ? 'transparent' : appState.bgColor}; {appState.transparentBg ? 'background-image: repeating-conic-gradient(#222 0% 25%, #181818 0% 50%); background-size: 16px 16px;' : ''}
+    {appState.crtEnabled && appState.crtCurvature > 0 && barrelMapUrl ? `filter: url(#crt-barrel-distort);` : ''}"
 >
+  {#if appState.crtEnabled && appState.crtCurvature > 0 && barrelMapUrl}
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <filter id="crt-barrel-distort" primitiveUnits="objectBoundingBox" x="-0.1" y="-0.1" width="1.2" height="1.2">
+      <feImage href={barrelMapUrl} result="barrel-map" preserveAspectRatio="none" x="0" y="0" width="1" height="1" />
+      <feDisplacementMap in="SourceGraphic" in2="barrel-map" scale={appState.crtCurvature * 0.001} xChannelSelector="R" yChannelSelector="G" />
+    </filter>
+  </svg>
+  {/if}
   {#if loading}
     <p class="animate-pulse text-doom-text-muted">Rendering...</p>
   {:else if error}
@@ -418,17 +427,8 @@
         {appState.crtEnabled ? `crt-scanlines crt-phosphor crt-curvature ${appState.transparentBg ? '' : 'crt-vignette'}` : ''}
         {appState.crtEnabled && appState.crtFlicker > 0 ? 'crt-flicker' : ''}"
       style="background-color: {appState.transparentBg ? 'transparent' : appState.bgColor}; padding: 1.5rem;
-        {appState.crtEnabled ? `--crt-curve: ${appState.crtCurvature}; --crt-flicker-speed: ${Math.max(0.05, 0.2 - appState.crtFlicker * 0.0015)}s; --crt-flicker-opacity: ${1 - appState.crtFlicker * 0.003};` : ''}
-        {appState.crtEnabled && appState.crtCurvature > 0 && barrelMapUrl ? `filter: url(#crt-barrel-distort);` : ''}"
+        {appState.crtEnabled ? `--crt-curve: ${appState.crtCurvature}; --crt-flicker-speed: ${Math.max(0.05, 0.2 - appState.crtFlicker * 0.0015)}s; --crt-flicker-opacity: ${1 - appState.crtFlicker * 0.003};` : ''}"
     >
-      {#if appState.crtEnabled && appState.crtCurvature > 0 && barrelMapUrl}
-      <svg width="0" height="0" style="position:absolute" aria-hidden="true">
-        <filter id="crt-barrel-distort" primitiveUnits="objectBoundingBox" x="-0.1" y="-0.1" width="1.2" height="1.2">
-          <feImage href={barrelMapUrl} result="barrel-map" preserveAspectRatio="none" x="0" y="0" width="1" height="1" />
-          <feDisplacementMap in="SourceGraphic" in2="barrel-map" scale={appState.crtCurvature * 0.001} xChannelSelector="R" yChannelSelector="G" />
-        </filter>
-      </svg>
-      {/if}
       {#if appState.pixelation > 0}
       <svg width="0" height="0" style="position:absolute">
         <filter id="doomgen-pixelate">
