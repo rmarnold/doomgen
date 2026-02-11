@@ -389,7 +389,7 @@ export async function downloadAnimatedWebp(
 
       // Capture frame
       const dataUrl = await toPng(target, {
-        pixelRatio: 2,
+        pixelRatio: 1,
         backgroundColor: transparentBg ? undefined : bg,
       });
 
