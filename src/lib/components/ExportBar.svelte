@@ -76,6 +76,9 @@
         shadowOffset: appState.shadowOffset,
         crtEnabled: appState.crtEnabled,
         crtCurvature: appState.crtCurvature,
+        crtFlicker: appState.crtFlicker,
+        pixelation: appState.pixelation,
+        colorShiftSpeed: appState.colorShiftSpeed,
       });
       showFeedback('SVG downloaded!');
     } catch {

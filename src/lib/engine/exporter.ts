@@ -239,13 +239,16 @@ export interface SvgExportOptions {
   shadowOffset: number;
   crtEnabled: boolean;
   crtCurvature: number;
+  crtFlicker: number;
+  pixelation: number;
+  colorShiftSpeed: number;
 }
 
 /**
  * Generate and download SVG file with visual effects.
  */
 export function downloadSvg(coloredLines: ColoredLine[], filename: string, options: SvgExportOptions): void {
-  const { bgColor, glowIntensity, glowColor, shadowOffset, crtEnabled, crtCurvature } = options;
+  const { bgColor, glowIntensity, glowColor, shadowOffset, crtEnabled, crtCurvature, crtFlicker, pixelation, colorShiftSpeed } = options;
   const lineHeight = 16;
   const charWidth = 9.6;
   const maxLineLen = coloredLines.reduce((max, l) => Math.max(max, l.length), 0);
@@ -294,6 +297,11 @@ export function downloadSvg(coloredLines: ColoredLine[], filename: string, optio
     defs.push(`    <radialGradient id="vig" cx="50%" cy="50%" r="70%">\n      <stop offset="0%" stop-color="#000" stop-opacity="0"/>\n      <stop offset="100%" stop-color="#000" stop-opacity="0.5"/>\n    </radialGradient>`);
   }
 
+  // Pixelation filter
+  if (pixelation > 0) {
+    defs.push(`    <filter id="px"><feGaussianBlur stdDeviation="${pixelation}" in="SourceGraphic" result="b"/><feComponentTransfer in="b"><feFuncR type="discrete" tableValues="0 .1 .2 .3 .4 .5 .6 .7 .8 .9 1"/><feFuncG type="discrete" tableValues="0 .1 .2 .3 .4 .5 .6 .7 .8 .9 1"/><feFuncB type="discrete" tableValues="0 .1 .2 .3 .4 .5 .6 .7 .8 .9 1"/></feComponentTransfer></filter>`);
+  }
+
   // CRT curvature clip path
   const borderRadius = crtEnabled && crtCurvature > 0 ? crtCurvature * 0.12 : 0;
   if (borderRadius > 0) {
@@ -303,6 +311,28 @@ export function downloadSvg(coloredLines: ColoredLine[], filename: string, optio
   const defsBlock = defs.length > 0 ? `  <defs>\n${defs.join('\n')}\n  </defs>\n` : '';
   const clipAttr = borderRadius > 0 ? ' clip-path="url(#clip)"' : '';
   const filterAttr = (glowIntensity > 0 || shadowOffset > 0) ? ' filter="url(#fx)"' : '';
+  const pxFilterAttr = pixelation > 0 ? ' filter="url(#px)"' : '';
+
+  // Build CSS animations
+  const cssRules: string[] = [];
+  if (colorShiftSpeed > 0) {
+    const duration = Math.max(0.5, 10 - colorShiftSpeed * 0.095);
+    cssRules.push(`    @keyframes color-shift-cycle { from { filter: hue-rotate(0deg); } to { filter: hue-rotate(360deg); } }`);
+    cssRules.push(`    .color-shift { animation: color-shift-cycle ${duration}s linear infinite; }`);
+  }
+  if (crtEnabled && crtFlicker > 0) {
+    const flickerSpeed = Math.max(0.05, 0.2 - crtFlicker * 0.0015);
+    const flickerOpacity = 1 - crtFlicker * 0.003;
+    cssRules.push(`    @keyframes crt-flicker-anim { 0%, 100% { opacity: 1; } 50% { opacity: ${flickerOpacity.toFixed(3)}; } }`);
+    cssRules.push(`    .crt-flicker { animation: crt-flicker-anim ${flickerSpeed}s infinite; }`);
+  }
+  if (cssRules.length > 0) {
+    cssRules.push(`    @media (prefers-reduced-motion: reduce) { .color-shift, .crt-flicker { animation: none !important; } }`);
+  }
+  const styleBlock = cssRules.length > 0 ? `  <style>\n${cssRules.join('\n')}\n  </style>\n` : '';
+
+  const flickerClass = (crtEnabled && crtFlicker > 0) ? ' class="crt-flicker"' : '';
+  const contentClassAttr = colorShiftSpeed > 0 ? ' class="color-shift"' : '';
 
   // Build text elements
   const textElements = coloredLines
@@ -333,13 +363,16 @@ export function downloadSvg(coloredLines: ColoredLine[], filename: string, optio
     overlays.push(`    <rect width="${width}" height="${height}" fill="url(#vig)"/>`);
   }
 
+  // Build text content block — pixelation wraps outside glow/shadow
+  const textBlock = pixelation > 0
+    ? `    <g${pxFilterAttr}>\n      <g${filterAttr}${contentClassAttr}>\n${textElements}\n      </g>\n    </g>`
+    : `    <g${filterAttr}${contentClassAttr}>\n${textElements}\n    </g>`;
+
   const svg = `<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}" width="${width}" height="${height}">
-${defsBlock}  <g${clipAttr}>
+${defsBlock}${styleBlock}  <g${clipAttr}${flickerClass}>
     <rect width="100%" height="100%" fill="${bgColor}"/>
-    <g${filterAttr}>
-${textElements}
-    </g>
+${textBlock}
 ${overlays.length > 0 ? overlays.join('\n') + '\n' : ''}  </g>
 </svg>`;
 

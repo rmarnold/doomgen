@@ -23,6 +23,7 @@ const crtEnabled = state.crtEnabled ?? false;
 const crtCurvature = state.crtCurvature ?? 0;
 const crtFlicker = state.crtFlicker ?? 0;
 const colorShiftSpeed = state.colorShiftSpeed ?? 0;
+const pixelation = state.pixelation ?? 0;
 
 // Hellfire palette glow color
 const glowColor = '#ffff00';
@@ -66,6 +67,11 @@ if (crtEnabled) {
   defs.push(`    <radialGradient id="vig" cx="50%" cy="50%" r="70%">\n      <stop offset="0%" stop-color="#000" stop-opacity="0"/>\n      <stop offset="100%" stop-color="#000" stop-opacity="0.5"/>\n    </radialGradient>`);
 }
 
+// Pixelation filter (matches preview's SVG filter)
+if (pixelation > 0) {
+  defs.push(`    <filter id="px"><feGaussianBlur stdDeviation="${pixelation}" in="SourceGraphic" result="b"/><feComponentTransfer in="b"><feFuncR type="discrete" tableValues="0 .1 .2 .3 .4 .5 .6 .7 .8 .9 1"/><feFuncG type="discrete" tableValues="0 .1 .2 .3 .4 .5 .6 .7 .8 .9 1"/><feFuncB type="discrete" tableValues="0 .1 .2 .3 .4 .5 .6 .7 .8 .9 1"/></feComponentTransfer></filter>`);
+}
+
 const borderRadius = crtEnabled && crtCurvature > 0 ? crtCurvature * 0.12 : 0;
 if (borderRadius > 0) {
   defs.push(`    <clipPath id="clip"><rect width="${width}" height="${height}" rx="${borderRadius}" ry="${borderRadius}"/></clipPath>`);
@@ -73,7 +79,11 @@ if (borderRadius > 0) {
 
 const defsBlock = defs.length > 0 ? `  <defs>\n${defs.join('\n')}\n  </defs>\n` : '';
 const clipAttr = borderRadius > 0 ? ' clip-path="url(#clip)"' : '';
-const filterAttr = (glowIntensity > 0 || shadowOffset > 0) ? ' filter="url(#fx)"' : '';
+
+// Build filter attribute — pixelation wraps the text group, glow/shadow on inner group
+const hasFx = glowIntensity > 0 || shadowOffset > 0;
+const filterAttr = hasFx ? ' filter="url(#fx)"' : '';
+const pxFilterAttr = pixelation > 0 ? ' filter="url(#px)"' : '';
 
 // Build CSS animations (matches preview exactly)
 const cssRules = [];
@@ -134,17 +144,20 @@ if (colorShiftSpeed > 0) contentClasses.push('color-shift');
 const flickerClass = (crtEnabled && crtFlicker > 0) ? ' class="crt-flicker"' : '';
 const contentClassAttr = contentClasses.length > 0 ? ` class="${contentClasses.join(' ')}"` : '';
 
+// Build text content block — pixelation wraps outside glow/shadow
+const textBlock = pixelation > 0
+  ? `    <g${pxFilterAttr}>\n      <g${filterAttr}${contentClassAttr}>\n${textElements}\n      </g>\n    </g>`
+  : `    <g${filterAttr}${contentClassAttr}>\n${textElements}\n    </g>`;
+
 const svg = `<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}" width="${width}" height="${height}">
 ${defsBlock}${styleBlock}  <g${clipAttr}${flickerClass}>
     <rect width="100%" height="100%" fill="${bgColor}"/>
-    <g${filterAttr}${contentClassAttr}>
-${textElements}
-    </g>
+${textBlock}
 ${overlays.length > 0 ? overlays.join('\n') + '\n' : ''}  </g>
 </svg>`;
 
 const outPath = resolve(process.cwd(), 'banner.svg');
 writeFileSync(outPath, svg, 'utf-8');
 console.log(`Banner written to ${outPath} (${width}x${height})`);
-console.log(`Animations: color-shift=${colorShiftSpeed > 0 ? 'on' : 'off'}, crt-flicker=${crtEnabled && crtFlicker > 0 ? 'on' : 'off'}`);
+console.log(`Effects: pixelation=${pixelation > 0 ? 'on' : 'off'}, color-shift=${colorShiftSpeed > 0 ? 'on' : 'off'}, crt-flicker=${crtEnabled && crtFlicker > 0 ? 'on' : 'off'}`);
