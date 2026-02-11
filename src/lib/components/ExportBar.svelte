@@ -6,13 +6,13 @@
   import { getGlowColor } from '$lib/engine/colorizer';
 
   interface Props {
-    asciiLines: string[];
-    coloredLines: ColoredLine[];
+    getAsciiLines: () => string[];
+    getColoredLines: () => ColoredLine[];
     previewElement: HTMLElement | null;
     filename: string;
   }
 
-  let { asciiLines, coloredLines, previewElement, filename }: Props = $props();
+  let { getAsciiLines, getColoredLines, previewElement, filename }: Props = $props();
 
   let transparentBg = $state(false);
   let feedback = $state<string | null>(null);
@@ -27,7 +27,7 @@
 
   async function handleCopyText() {
     try {
-      await copyText(asciiLines);
+      await copyText(getAsciiLines());
       showFeedback('Text copied!');
     } catch {
       showFeedback('Copy failed');
@@ -66,9 +66,10 @@
 
   function handleDownloadSvg() {
     try {
+      const lines = getColoredLines();
       const palette = getPaletteById(appState.paletteId);
       const svgGlowColor = getGlowColor(palette);
-      downloadSvg(coloredLines, filename, {
+      downloadSvg(lines, filename, {
         bgColor: appState.bgColor,
         glowIntensity: appState.glowIntensity,
         glowColor: svgGlowColor,
@@ -84,7 +85,7 @@
 
   function handleDownloadAnsi() {
     try {
-      downloadAnsi(coloredLines, filename);
+      downloadAnsi(getColoredLines(), filename);
       showFeedback('ANSI downloaded!');
     } catch {
       showFeedback('Download failed');
@@ -93,7 +94,7 @@
 
   function handleDownloadBanner() {
     try {
-      downloadBanner(coloredLines, filename);
+      downloadBanner(getColoredLines(), filename);
       showFeedback('Banner downloaded!');
     } catch {
       showFeedback('Download failed');
@@ -102,9 +103,10 @@
 
   function handleDownloadHtml() {
     try {
+      const lines = getColoredLines();
       const palette = getPaletteById(appState.paletteId);
       const glowColor = getGlowColor(palette);
-      downloadHtml(coloredLines, filename, {
+      downloadHtml(lines, filename, {
         bgColor: appState.bgColor,
         glowIntensity: appState.glowIntensity,
         glowColor,
@@ -123,7 +125,7 @@
 
   function handleDownloadJson() {
     try {
-      downloadJson(coloredLines, filename);
+      downloadJson(getColoredLines(), filename);
       showFeedback('JSON downloaded!');
     } catch {
       showFeedback('Download failed');

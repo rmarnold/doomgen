@@ -11,16 +11,21 @@
 
   let previewComponent: AsciiPreview;
   let previewElement: HTMLElement | null = $state(null);
-  let asciiLines: string[] = $state([]);
-  let exportColoredLines: ColoredLine[] = $state([]);
   let dimensions = $state({ width: 0, height: 0 });
   let styleOpen = $state(false);
 
-  // Debounced sync — avoid re-evaluating getters on every micro-change
+  // Live getters — read fresh data from preview at export time (avoids stale timing bugs)
+  function getAsciiLines(): string[] {
+    return previewComponent?.getAsciiLines() ?? [];
+  }
+  function getColoredLines(): ColoredLine[] {
+    return previewComponent?.getColoredLines() ?? [];
+  }
+
+  // Sync only the DOM ref + dimensions for UI display (not export data)
   let syncRaf = 0;
   $effect(() => {
     if (previewComponent) {
-      // Touch reactive deps so Svelte tracks them
       void appState.text;
       void appState.fontId;
       void appState.paletteId;
@@ -29,8 +34,6 @@
       syncRaf = requestAnimationFrame(() => {
         if (!previewComponent) return;
         previewElement = previewComponent.getPreviewElement();
-        asciiLines = previewComponent.getAsciiLines();
-        exportColoredLines = previewComponent.getColoredLines();
         dimensions = previewComponent.getDimensions();
       });
     }
@@ -121,8 +124,8 @@
   <!-- PREVIEW Section -->
   <section data-anim="preview" class="relative">
     <FloatingExportBar
-      {asciiLines}
-      coloredLines={exportColoredLines}
+      {getAsciiLines}
+      {getColoredLines}
       {previewElement}
       {filename}
     />
@@ -139,8 +142,8 @@
   <section data-anim="export" class="metal-panel p-4">
     <h2 class="mb-3 text-[0.65rem] uppercase tracking-[0.2em] text-doom-text-muted" style="font-family: var(--font-doom-ui)">Export</h2>
     <ExportBar
-      {asciiLines}
-      coloredLines={exportColoredLines}
+      {getAsciiLines}
+      {getColoredLines}
       {previewElement}
       {filename}
     />
