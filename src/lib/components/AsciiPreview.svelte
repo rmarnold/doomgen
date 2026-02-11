@@ -38,15 +38,15 @@
         const dist = Math.sqrt(dx * dx + dy * dy);
         const norm = dist / maxDist;
 
-        // Barrel distortion: edges sample from closer to center (magnify center)
-        // feDisplacementMap formula: P'(x,y) = P(x + scale*(R-0.5), y + scale*(G-0.5))
-        // To barrel-bulge: at edges, sample inward → negative offset at right edge, positive at left
+        // CRT convex bulge: edges bow outward, content at edges pushed away from center
+        // feDisplacementMap: P'(x,y) = P(x + scale*(R-0.5), y + scale*(G-0.5))
+        // At edges, sample outward (away from center) so content appears to bow out
         const angle = Math.atan2(dy, dx);
         const strength = norm * norm;
 
         const i = (y * size + x) * 4;
-        data[i]     = Math.round(128 - Math.cos(angle) * strength * 127); // R = X (flipped for barrel)
-        data[i + 1] = Math.round(128 - Math.sin(angle) * strength * 127); // G = Y (flipped for barrel)
+        data[i]     = Math.round(128 + Math.cos(angle) * strength * 127); // R = X
+        data[i + 1] = Math.round(128 + Math.sin(angle) * strength * 127); // G = Y
         data[i + 2] = 128;
         data[i + 3] = 255;
       }
