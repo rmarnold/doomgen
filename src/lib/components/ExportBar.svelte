@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { copyText, copyImage, downloadPng, downloadSvg, downloadAnsi, downloadBanner, downloadHtml, downloadJson, importJson } from '$lib/engine/exporter';
+  import { copyText, copyImage, downloadPng, downloadWebp, downloadSvg, downloadAnsi, downloadBanner, downloadHtml, downloadJson, importJson } from '$lib/engine/exporter';
   import type { ColoredLine } from '$lib/engine/colorizer';
   import { appState } from '$lib/stores/state.svelte';
   import { getPaletteById } from '$lib/theme/palettes';
@@ -49,6 +49,16 @@
     try {
       await downloadPng(previewElement, filename, { transparentBg, bgColor: appState.bgColor });
       showFeedback('PNG downloaded!');
+    } catch {
+      showFeedback('Download failed');
+    }
+  }
+
+  async function handleDownloadWebp() {
+    if (!previewElement) return;
+    try {
+      await downloadWebp(previewElement, filename, { transparentBg, bgColor: appState.bgColor });
+      showFeedback('WebP downloaded!');
     } catch {
       showFeedback('Download failed');
     }
@@ -143,6 +153,7 @@
     Transparent
   </label>
   <button class={btnClass} onclick={handleDownloadPng} disabled={!previewElement}>PNG</button>
+  <button class={btnClass} onclick={handleDownloadWebp} disabled={!previewElement}>WebP</button>
   <button class={btnClass} onclick={handleCopyImage} disabled={!previewElement}>Copy Image</button>
   <button class={btnClass} onclick={handleDownloadSvg}>SVG</button>
   <button class={btnClass} onclick={handleDownloadAnsi}>ANSI</button>

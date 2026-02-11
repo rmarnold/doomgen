@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { copyText, copyImage, downloadPng, downloadSvg, downloadAnsi, downloadBanner, downloadHtml, downloadJson, importJson } from '$lib/engine/exporter';
+  import { copyText, copyImage, downloadPng, downloadWebp, downloadSvg, downloadAnsi, downloadBanner, downloadHtml, downloadJson, importJson } from '$lib/engine/exporter';
   import type { ColoredLine } from '$lib/engine/colorizer';
   import { appState } from '$lib/stores/state.svelte';
   import { getPaletteById } from '$lib/theme/palettes';
@@ -48,6 +48,16 @@
     if (!previewElement) return;
     try {
       await downloadPng(previewElement, filename, { transparentBg, bgColor: appState.bgColor });
+      showFeedback();
+    } catch {
+      // Silent failure for floating bar
+    }
+  }
+
+  async function handleDownloadWebp() {
+    if (!previewElement) return;
+    try {
+      await downloadWebp(previewElement, filename, { transparentBg, bgColor: appState.bgColor });
       showFeedback();
     } catch {
       // Silent failure for floating bar
@@ -181,6 +191,20 @@
       <rect x="2" y="3" width="12" height="10" rx="1" />
       <circle cx="5.5" cy="6.5" r="1" fill="currentColor" />
       <path d="M14 10l-3-3-2 2-3-3-4 4v2h12z" />
+    </svg>
+  </button>
+
+  <!-- WebP Download Button -->
+  <button
+    class="doom-btn p-1.5"
+    onclick={handleDownloadWebp}
+    disabled={!previewElement}
+    title="Download WebP (web-optimized)"
+    aria-label="Download WebP"
+  >
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+      <rect x="2" y="3" width="12" height="10" rx="1" />
+      <path d="M4.5 9.5l1.5-4 1.5 3 1.5-3 1.5 4" stroke-linecap="round" stroke-linejoin="round" />
     </svg>
   </button>
 
