@@ -25,11 +25,40 @@
     .color-shift { animation: color-shift-cycle 8.575s linear infinite; }
     @keyframes crt-flicker-anim { 0%, 100% { opacity: 1; } 50% { opacity: 0.898; } }
     .crt-flicker { animation: crt-flicker-anim 0.14900000000000002s infinite; }
-    @media (prefers-reduced-motion: reduce) { .color-shift, .crt-flicker { animation: none !important; } }
+    @keyframes crt-screen-blip {
+      0%, 93.8% { transform: translateX(0); filter: brightness(1); }
+      94.9% { transform: translateX(20px); filter: brightness(1.6); }
+      96.5% { transform: translateX(20px); filter: brightness(1.1); }
+      97.7% { transform: translateX(-3px); filter: brightness(1.1); }
+      100% { transform: translateX(0); filter: brightness(1); }
+    }
+    .crt-screen-blip { animation: crt-screen-blip 2.56s infinite; transform-origin: center; transform-box: fill-box; }
+    @keyframes crt-power-loss {
+      0%, 88.4% { transform: scaleY(1) translateX(0); filter: brightness(1); opacity: 1; }
+      88.4% { transform: scaleY(1.00) translateX(8px); }
+      88.8% { transform: scaleY(0.95) translateX(-10px); }
+      89.2% { transform: scaleY(0.90) translateX(6px); }
+      89.5% { transform: scaleY(0.85) translateX(-8px); }
+      89.9% { transform: scaleY(0.80) translateX(5px); }
+      90.3% { transform: scaleY(0.75) translateX(-6px); }
+      91.8% { transform: scaleY(0.01) translateX(0); filter: brightness(3); }
+      92.2% { transform: scaleY(0.01) translateX(6px); filter: brightness(3); }
+      92.6% { transform: scaleY(0.01) translateX(-4px); filter: brightness(3); }
+      93.0% { transform: scaleY(0.01) translateX(2px); filter: brightness(3); }
+      94.4% { opacity: 0; transform: scaleY(0.005) translateX(0); }
+      97.3% { opacity: 0; transform: scaleY(0.005) translateX(0); }
+      97.8% { transform: scaleY(0.01) translateX(0); opacity: 1; filter: brightness(2.5); }
+      98.6% { transform: scaleY(0.5) translateX(0); filter: brightness(1.5); }
+      100% { transform: scaleY(1) translateX(0); filter: brightness(1); opacity: 1; }
+    }
+    .crt-power-loss { animation: crt-power-loss 10.42s infinite; transform-origin: center; transform-box: fill-box; }
+    @media (prefers-reduced-motion: reduce) { .color-shift, .crt-flicker, .crt-screen-blip, .crt-power-loss { animation: none !important; } }
   </style>
   <g clip-path="url(#clip)">
     <rect width="100%" height="100%" fill="#170808"/>
-    <g class="crt-flicker">
+<g class="crt-flicker">
+      <g class="crt-power-loss">
+      <g class="crt-screen-blip">
       <g filter="url(#px)">
         <g filter="url(#fx)" class="color-shift">
     <text y="36" font-family="'JetBrains Mono', monospace" font-size="14"><tspan x="20" fill="#63ff5b">'</tspan><tspan x="29.6" fill="#63ff5b">#</tspan><tspan x="39.2" fill="#63ff5b">#</tspan><tspan x="48.8" fill="#63ff5b">#</tspan><tspan x="58.4" fill="#63ff5b">#</tspan><tspan x="68" fill="#63ff5b">#</tspan><tspan x="77.6" fill="#63ff5b">#</tspan><tspan x="87.2" fill="#63ff5b">#</tspan><tspan x="96.8" fill="#63ff5b">#</tspan><tspan x="106.39999999999999" fill="#63ff5b">:</tspan><tspan x="116" fill="#63ff5b">:</tspan><tspan x="125.6" fill="#63ff5b">:</tspan><tspan x="135.2" fill="#63ff5b">'</tspan><tspan x="144.8" fill="#63ff5b">#</tspan><tspan x="154.4" fill="#63ff5b">#</tspan><tspan x="164" fill="#63ff5b">#</tspan><tspan x="173.6" fill="#63ff5b">#</tspan><tspan x="183.2" fill="#63ff5b">#</tspan><tspan x="192.79999999999998" fill="#63ff5b">#</tspan><tspan x="202.4" fill="#63ff5b">#</tspan><tspan x="212" fill="#63ff5b">:</tspan><tspan x="221.6" fill="#63ff5b">:</tspan><tspan x="231.2" fill="#63ff5b">:</tspan><tspan x="240.79999999999998" fill="#63ff5b">'</tspan><tspan x="250.39999999999998" fill="#63ff5b">#</tspan><tspan x="260" fill="#63ff5b">#</tspan><tspan x="269.6" fill="#63ff5b">#</tspan><tspan x="279.2" fill="#63ff5b">#</tspan><tspan x="288.8" fill="#63ff5b">#</tspan><tspan x="298.4" fill="#63ff5b">#</tspan><tspan x="308" fill="#63ff5b">#</tspan><tspan x="317.59999999999997" fill="#63ff5b">:</tspan><tspan x="327.2" fill="#63ff5b">:</tspan><tspan x="336.8" fill="#63ff5b">'</tspan><tspan x="346.4" fill="#63ff5b">#</tspan><tspan x="356" fill="#63ff5b">#</tspan><tspan x="365.59999999999997" fill="#63ff5b">:</tspan><tspan x="375.2" fill="#63ff5b">:</tspan><tspan x="384.8" fill="#63ff5b">:</tspan><tspan x="394.4" fill="#63ff5b">:</tspan><tspan x="404" fill="#63ff5b">'</tspan><tspan x="413.59999999999997" fill="#63ff5b">#</tspan><tspan x="423.2" fill="#63ff5b">#</tspan><tspan x="432.8" fill="#63ff5b">:</tspan><tspan x="442.4" fill="#63ff5b">:</tspan><tspan x="452" fill="#63ff5b">'</tspan><tspan x="461.59999999999997" fill="#63ff5b">#</tspan><tspan x="471.2" fill="#63ff5b">#</tspan><tspan x="480.79999999999995" fill="#63ff5b">#</tspan><tspan x="490.4" fill="#63ff5b">#</tspan><tspan x="500" fill="#63ff5b">#</tspan><tspan x="509.59999999999997" fill="#63ff5b">#</tspan><tspan x="519.2" fill="#63ff5b">:</tspan><tspan x="528.8" fill="#63ff5b">:</tspan><tspan x="538.4" fill="#63ff5b">:</tspan><tspan x="548" fill="#63ff5b">'</tspan><tspan x="557.6" fill="#63ff5b">#</tspan><tspan x="567.1999999999999" fill="#63ff5b">#</tspan><tspan x="576.8" fill="#63ff5b">#</tspan><tspan x="586.4" fill="#63ff5b">#</tspan><tspan x="596" fill="#63ff5b">#</tspan><tspan x="605.6" fill="#63ff5b">#</tspan><tspan x="615.1999999999999" fill="#63ff5b">#</tspan><tspan x="624.8" fill="#63ff5b">#</tspan><tspan x="634.4" fill="#63ff5b">:</tspan><tspan x="644" fill="#63ff5b">'</tspan><tspan x="653.6" fill="#63ff5b">#</tspan><tspan x="663.1999999999999" fill="#63ff5b">#</tspan><tspan x="672.8" fill="#63ff5b">:</tspan><tspan x="682.4" fill="#63ff5b">:</tspan><tspan x="692" fill="#63ff5b">:</tspan><tspan x="711.1999999999999" fill="#63ff5b">#</tspan><tspan x="720.8" fill="#63ff5b">#</tspan><tspan x="730.4" fill="#63ff5b">:</tspan></text>
@@ -45,6 +74,8 @@
     <text y="196" font-family="'JetBrains Mono', monospace" font-size="14"><tspan x="58.4" fill="#ffffff">;</tspan><tspan x="68" fill="#ffffff">;</tspan><tspan x="231.2" fill="#ffffff">;</tspan><tspan x="250.39999999999998" fill="#ffffff">;</tspan><tspan x="279.2" fill="#ffffff">;</tspan><tspan x="288.8" fill="#ffffff">;</tspan><tspan x="413.59999999999997" fill="#ffffff">;</tspan><tspan x="452" fill="#ffffff">;</tspan><tspan x="461.59999999999997" fill="#ffffff">;</tspan><tspan x="480.79999999999995" fill="#ffffff">;</tspan><tspan x="490.4" fill="#ffffff">;</tspan><tspan x="538.4" fill="#ffffff">;</tspan><tspan x="605.6" fill="#ffffff">;</tspan><tspan x="672.8" fill="#ffffff">;</tspan><tspan x="682.4" fill="#ffffff">;</tspan><tspan x="692" fill="#ffffff">;</tspan></text>
     <text y="212" font-family="'JetBrains Mono', monospace" font-size="14"><tspan x="58.4" fill="#ffffff">.</tspan><tspan x="68" fill="#ffffff">.</tspan><tspan x="231.2" fill="#ffffff">.</tspan><tspan x="279.2" fill="#ffffff">.</tspan><tspan x="288.8" fill="#ffffff">.</tspan><tspan x="413.59999999999997" fill="#ffffff">.</tspan><tspan x="452" fill="#ffffff">.</tspan><tspan x="461.59999999999997" fill="#ffffff">.</tspan><tspan x="480.79999999999995" fill="#ffffff">.</tspan><tspan x="490.4" fill="#ffffff">.</tspan><tspan x="605.6" fill="#ffffff">.</tspan><tspan x="692" fill="#ffffff">.</tspan></text>
     <text y="228" font-family="'JetBrains Mono', monospace" font-size="14"><tspan x="288.8" fill="#ffffff">.</tspan><tspan x="490.4" fill="#ffffff">.</tspan><tspan x="692" fill="#ffffff">.</tspan></text>
+      </g>
+      </g>
       </g>
       </g>
     </g>

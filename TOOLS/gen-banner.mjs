@@ -30,6 +30,9 @@ const crtCurvature = state.crtCurvature ?? 0;
 const crtFlicker = state.crtFlicker ?? 0;
 const pixelation = state.pixelation ?? 0;
 const colorShiftSpeed = state.colorShiftSpeed ?? 0;
+const screenShake = state.screenShake ?? 0;
+const crtPowerLoss = state.crtPowerLoss ?? 0;
+const crtScreenBlip = state.crtScreenBlip ?? 0;
 const bgColor = state.bgColor ?? '#170808';
 
 // Build defs
@@ -79,26 +82,128 @@ const clipAttr = borderRadius > 0 ? ' clip-path="url(#clip)"' : '';
 const filterAttr = (glowIntensity > 0 || shadowOffset > 0) ? ' filter="url(#fx)"' : '';
 const pxFilterAttr = pixelation > 0 ? ' filter="url(#px)"' : '';
 
-// CSS animations
+// CSS animations (matching exporter.ts exactly)
 const cssRules = [];
+const animClasses = [];
+
 if (colorShiftSpeed > 0) {
   const duration = Math.max(0.5, 10 - colorShiftSpeed * 0.095);
   cssRules.push(`    @keyframes color-shift-cycle { from { filter: hue-rotate(0deg); } to { filter: hue-rotate(360deg); } }`);
   cssRules.push(`    .color-shift { animation: color-shift-cycle ${duration}s linear infinite; }`);
+  animClasses.push('.color-shift');
 }
+
 if (crtEnabled && crtFlicker > 0) {
   const flickerSpeed = Math.max(0.05, 0.2 - crtFlicker * 0.0015);
   const flickerOpacity = 1 - crtFlicker * 0.003;
-  cssRules.push(`    @keyframes crt-flicker-anim { 0%, 100% { opacity: 1; } 50% { opacity: ${flickerOpacity}; } }`);
+  cssRules.push(`    @keyframes crt-flicker-anim { 0%, 100% { opacity: 1; } 50% { opacity: ${flickerOpacity.toFixed(3)}; } }`);
   cssRules.push(`    .crt-flicker { animation: crt-flicker-anim ${flickerSpeed}s infinite; }`);
+  animClasses.push('.crt-flicker');
 }
+
+if (screenShake > 0) {
+  const interval = Math.max(500, 10000 - screenShake * 95);
+  const shakeDuration = 0.35;
+  const totalCycle = interval + shakeDuration * 1000;
+  const idleEnd = ((interval / totalCycle) * 100).toFixed(1);
+  const intensity = 2 + (screenShake / 100) * 8;
+
+  const steps = [1, -0.75, 0.6, -0.4, 0.25, -0.1, 0];
+  const stepDuration = shakeDuration / steps.length;
+  const stepPercents = steps.map((_, i) => {
+    const timeOffset = interval + i * stepDuration * 1000;
+    return ((timeOffset / totalCycle) * 100).toFixed(1);
+  });
+
+  let keyframes = `    @keyframes screen-shake {\n      0%, ${idleEnd}% { transform: translate(0, 0); }\n`;
+  steps.forEach((mult, i) => {
+    const x = (mult * intensity).toFixed(2);
+    const y = (mult * intensity * 0.5).toFixed(2);
+    keyframes += `      ${stepPercents[i]}% { transform: translate(${x}px, ${y}px); }\n`;
+  });
+  keyframes += `      100% { transform: translate(0, 0); }\n    }`;
+
+  cssRules.push(keyframes);
+  cssRules.push(`    .screen-shake { animation: screen-shake ${(totalCycle / 1000).toFixed(2)}s infinite; transform-origin: center; transform-box: fill-box; }`);
+  animClasses.push('.screen-shake');
+}
+
+if (crtEnabled && crtScreenBlip > 0) {
+  const interval = Math.max(1000, 15000 - crtScreenBlip * 140);
+  const blipDuration = 0.16;
+  const totalCycle = interval + blipDuration * 1000;
+  const idleEnd = ((interval / totalCycle) * 100).toFixed(1);
+
+  const p1 = (((interval + 30) / totalCycle) * 100).toFixed(1);
+  const p2 = (((interval + 70) / totalCycle) * 100).toFixed(1);
+  const p3 = (((interval + 100) / totalCycle) * 100).toFixed(1);
+
+  cssRules.push(`    @keyframes crt-screen-blip {
+      0%, ${idleEnd}% { transform: translateX(0); filter: brightness(1); }
+      ${p1}% { transform: translateX(20px); filter: brightness(1.6); }
+      ${p2}% { transform: translateX(20px); filter: brightness(1.1); }
+      ${p3}% { transform: translateX(-3px); filter: brightness(1.1); }
+      100% { transform: translateX(0); filter: brightness(1); }
+    }`);
+  cssRules.push(`    .crt-screen-blip { animation: crt-screen-blip ${(totalCycle / 1000).toFixed(2)}s infinite; transform-origin: center; transform-box: fill-box; }`);
+  animClasses.push('.crt-screen-blip');
+}
+
+if (crtEnabled && crtPowerLoss > 0) {
+  const interval = Math.max(3000, 30000 - crtPowerLoss * 270);
+  const powerDuration = 1.21;
+  const totalCycle = interval + powerDuration * 1000;
+  const idleEnd = ((interval / totalCycle) * 100).toFixed(1);
+
+  const zigzagSteps = 6;
+  const zigzagPercents = Array.from({ length: zigzagSteps }, (_, i) => {
+    const time = interval + i * 40;
+    return ((time / totalCycle) * 100).toFixed(1);
+  });
+
+  const collapseTime = interval + 0.24 * 1000 + 0.12 * 1000;
+  const col = ((collapseTime / totalCycle) * 100).toFixed(1);
+
+  const h1 = (((collapseTime + 40) / totalCycle) * 100).toFixed(1);
+  const h2 = (((collapseTime + 80) / totalCycle) * 100).toFixed(1);
+  const h3 = (((collapseTime + 120) / totalCycle) * 100).toFixed(1);
+
+  const fadeTime = collapseTime + 0.12 * 1000 + 0.15 * 1000;
+  const fade = ((fadeTime / totalCycle) * 100).toFixed(1);
+
+  const pauseTime = fadeTime + 0.3 * 1000;
+  const pause = ((pauseTime / totalCycle) * 100).toFixed(1);
+
+  const r1 = (((pauseTime + 50) / totalCycle) * 100).toFixed(1);
+  const r2 = (((pauseTime + 130) / totalCycle) * 100).toFixed(1);
+
+  let keyframes = `    @keyframes crt-power-loss {\n      0%, ${idleEnd}% { transform: scaleY(1) translateX(0); filter: brightness(1); opacity: 1; }\n`;
+
+  [8, -10, 6, -8, 5, -6].forEach((x, i) => {
+    const scale = (1 - (i / zigzagSteps) * 0.3).toFixed(2);
+    keyframes += `      ${zigzagPercents[i]}% { transform: scaleY(${scale}) translateX(${x}px); }\n`;
+  });
+
+  keyframes += `      ${col}% { transform: scaleY(0.01) translateX(0); filter: brightness(3); }\n`;
+  keyframes += `      ${h1}% { transform: scaleY(0.01) translateX(6px); filter: brightness(3); }\n`;
+  keyframes += `      ${h2}% { transform: scaleY(0.01) translateX(-4px); filter: brightness(3); }\n`;
+  keyframes += `      ${h3}% { transform: scaleY(0.01) translateX(2px); filter: brightness(3); }\n`;
+  keyframes += `      ${fade}% { opacity: 0; transform: scaleY(0.005) translateX(0); }\n`;
+  keyframes += `      ${pause}% { opacity: 0; transform: scaleY(0.005) translateX(0); }\n`;
+
+  keyframes += `      ${r1}% { transform: scaleY(0.01) translateX(0); opacity: 1; filter: brightness(2.5); }\n`;
+  keyframes += `      ${r2}% { transform: scaleY(0.5) translateX(0); filter: brightness(1.5); }\n`;
+  keyframes += `      100% { transform: scaleY(1) translateX(0); filter: brightness(1); opacity: 1; }\n    }`;
+
+  cssRules.push(keyframes);
+  cssRules.push(`    .crt-power-loss { animation: crt-power-loss ${(totalCycle / 1000).toFixed(2)}s infinite; transform-origin: center; transform-box: fill-box; }`);
+  animClasses.push('.crt-power-loss');
+}
+
 if (cssRules.length > 0) {
-  cssRules.push(`    @media (prefers-reduced-motion: reduce) { .color-shift, .crt-flicker { animation: none !important; } }`);
+  cssRules.push(`    @media (prefers-reduced-motion: reduce) { ${animClasses.join(', ')} { animation: none !important; } }`);
 }
 const styleBlock = cssRules.length > 0 ? `  <style>\n${cssRules.join('\n')}\n  </style>\n` : '';
-
-const flickerClass = (crtEnabled && crtFlicker > 0) ? ' class="crt-flicker"' : '';
-const contentClassAttr = colorShiftSpeed > 0 ? ' class="color-shift"' : '';
 
 // Build text elements
 const textElements = coloredLines
@@ -129,13 +234,30 @@ if (crtEnabled) {
   overlays.push(`    <rect width="${width}" height="${height}" fill="url(#vig)"/>`);
 }
 
-// Build text content block
-const innerGroup = `<g${filterAttr}${contentClassAttr}>\n${textElements}\n      </g>`;
-let textBlock;
+// Build text content block with nested animation wrappers
+// Nesting order (outer to inner): flicker > power-loss > screen-blip > screen-shake > pixelation > glow+colorShift > text
+let textBlock = `<g${filterAttr}${colorShiftSpeed > 0 ? ' class="color-shift"' : ''}>\n${textElements}\n      </g>`;
+
 if (pixelation > 0) {
-  textBlock = `    <g${flickerClass}>\n      <g${pxFilterAttr}>\n        ${innerGroup}\n      </g>\n    </g>`;
+  textBlock = `<g${pxFilterAttr}>\n        ${textBlock}\n      </g>`;
+}
+
+if (screenShake > 0) {
+  textBlock = `<g class="screen-shake">\n      ${textBlock}\n      </g>`;
+}
+
+if (crtEnabled && crtScreenBlip > 0) {
+  textBlock = `<g class="crt-screen-blip">\n      ${textBlock}\n      </g>`;
+}
+
+if (crtEnabled && crtPowerLoss > 0) {
+  textBlock = `<g class="crt-power-loss">\n      ${textBlock}\n      </g>`;
+}
+
+if (crtEnabled && crtFlicker > 0) {
+  textBlock = `<g class="crt-flicker">\n      ${textBlock}\n    </g>`;
 } else {
-  textBlock = `    <g${flickerClass}>\n      ${innerGroup}\n    </g>`;
+  textBlock = `    ${textBlock}`;
 }
 
 const svg = `<?xml version="1.0" encoding="UTF-8"?>
@@ -148,4 +270,13 @@ ${overlays.length > 0 ? overlays.join('\n') + '\n' : ''}  </g>
 
 const outPath = resolve('banner.svg');
 writeFileSync(outPath, svg, 'utf-8');
+
+// Report what animations are included
+const anims = [];
+if (colorShiftSpeed > 0) anims.push('color-shift');
+if (crtEnabled && crtFlicker > 0) anims.push('crt-flicker');
+if (screenShake > 0) anims.push('screen-shake');
+if (crtEnabled && crtScreenBlip > 0) anims.push('crt-screen-blip');
+if (crtEnabled && crtPowerLoss > 0) anims.push('crt-power-loss');
 console.log(`Banner written to ${outPath} (${width}x${height}, ${coloredLines.length} rows)`);
+if (anims.length > 0) console.log(`Animations: ${anims.join(', ')}`);
