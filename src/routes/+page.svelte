@@ -14,7 +14,7 @@
   let asciiLines: string[] = $state([]);
   let exportColoredLines: ColoredLine[] = $state([]);
   let dimensions = $state({ width: 0, height: 0 });
-  let styleOpen = $state(true);
+  let styleOpen = $state(false);
 
   // Debounced sync — avoid re-evaluating getters on every micro-change
   let syncRaf = 0;
