@@ -341,7 +341,7 @@
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
     const img = ctx.createImageData(size, size);
-    const k = 0.35;
+    const k = 0.5;
     for (let y = 0; y < size; y++) {
       for (let x = 0; x < size; x++) {
         const u = (x / (size - 1)) * 2 - 1;
@@ -349,7 +349,7 @@
         const r2 = u * u + v * v;
         const i = (y * size + x) * 4;
         img.data[i]     = Math.max(0, Math.min(255, Math.round(128 - u * k * r2 * 128)));
-        img.data[i + 1] = Math.max(0, Math.min(255, Math.round(128 - Math.abs(v) * k * r2 * 128)));
+        img.data[i + 1] = Math.max(0, Math.min(255, Math.round(128 + v * k * r2 * 128)));
         img.data[i + 2] = 128;
         img.data[i + 3] = 255;
       }
