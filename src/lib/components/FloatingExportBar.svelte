@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { copyText, copyImage, downloadPng, downloadAnimatedWebp, downloadSvg, downloadAnsi, downloadBanner, downloadHtml, downloadJson, importJson } from '$lib/engine/exporter';
+  import { copyText, copyImage, downloadPng, downloadWebp, downloadAnimatedWebp, downloadSvg, downloadAnsi, downloadBanner, downloadHtml, downloadJson, importJson } from '$lib/engine/exporter';
   import type { ColoredLine } from '$lib/engine/colorizer';
   import { appState } from '$lib/stores/state.svelte';
   import { getPaletteById } from '$lib/theme/palettes';
@@ -17,7 +17,7 @@
   let transparentBg = $state(false);
   let showSuccess = $state(false);
   let successTimer: ReturnType<typeof setTimeout>;
-  let webpExporting = $state(false);
+  let animatedWebpExporting = $state(false);
   let fileInputEl: HTMLInputElement;
 
   function showFeedback() {
@@ -57,7 +57,17 @@
 
   async function handleDownloadWebp() {
     if (!previewElement) return;
-    webpExporting = true;
+    try {
+      await downloadWebp(previewElement, filename, { transparentBg, bgColor: appState.bgColor });
+      showFeedback();
+    } catch {
+      // Silent failure for floating bar
+    }
+  }
+
+  async function handleDownloadAnimatedWebp() {
+    if (!previewElement) return;
+    animatedWebpExporting = true;
     try {
       await downloadAnimatedWebp(
         previewElement,
@@ -74,7 +84,7 @@
     } catch (e) {
       console.error('Animated WebP export failed:', e);
     } finally {
-      webpExporting = false;
+      animatedWebpExporting = false;
     }
   }
 
@@ -157,6 +167,8 @@
     showFeedback();
     input.value = '';
   }
+
+  const hasAnimations = $derived(appState.colorShiftSpeed > 0 || (appState.crtEnabled && appState.crtFlicker > 0));
 </script>
 
 <!-- Floating Export Bar (Desktop Only) -->
@@ -182,13 +194,8 @@
     </svg>
   </button>
 
-  <!-- Copy Text Button -->
-  <button
-    class="doom-btn p-1.5"
-    onclick={handleCopyText}
-    title="Copy Text"
-    aria-label="Copy Text"
-  >
+  <!-- Copy Text -->
+  <button class="doom-btn p-1.5" onclick={handleCopyText} title="Copy Text" aria-label="Copy Text">
     <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
       <rect x="4" y="5" width="8" height="9" rx="1" />
       <path d="M12 5V3.5A1.5 1.5 0 0 0 10.5 2h-6A1.5 1.5 0 0 0 3 3.5V11" />
@@ -198,14 +205,11 @@
     </svg>
   </button>
 
-  <!-- PNG Download Button -->
-  <button
-    class="doom-btn p-1.5"
-    onclick={handleDownloadPng}
-    disabled={!previewElement}
-    title="Download PNG"
-    aria-label="Download PNG"
-  >
+  <!-- Separator -->
+  <div class="w-px h-4 bg-doom-surface/50"></div>
+
+  <!-- PNG (static) -->
+  <button class="doom-btn p-1.5" onclick={handleDownloadPng} disabled={!previewElement} title="PNG (static snapshot)" aria-label="Download PNG">
     <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
       <rect x="2" y="3" width="12" height="10" rx="1" />
       <circle cx="5.5" cy="6.5" r="1" fill="currentColor" />
@@ -213,28 +217,16 @@
     </svg>
   </button>
 
-  <!-- WebP Download Button -->
-  <button
-    class="doom-btn p-1.5 {webpExporting ? 'animate-pulse text-doom-orange' : ''}"
-    onclick={handleDownloadWebp}
-    disabled={!previewElement || webpExporting}
-    title={webpExporting ? 'Exporting animated WebP...' : 'Download Animated WebP'}
-    aria-label={webpExporting ? 'Exporting animated WebP' : 'Download Animated WebP'}
-  >
+  <!-- WebP (static) -->
+  <button class="doom-btn p-1.5" onclick={handleDownloadWebp} disabled={!previewElement} title="WebP (static, smaller file)" aria-label="Download WebP">
     <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
       <rect x="2" y="3" width="12" height="10" rx="1" />
       <path d="M4.5 9.5l1.5-4 1.5 3 1.5-3 1.5 4" stroke-linecap="round" stroke-linejoin="round" />
     </svg>
   </button>
 
-  <!-- Copy Image Button -->
-  <button
-    class="doom-btn p-1.5"
-    onclick={handleCopyImage}
-    disabled={!previewElement}
-    title="Copy Image"
-    aria-label="Copy Image"
-  >
+  <!-- Copy Image (static) -->
+  <button class="doom-btn p-1.5" onclick={handleCopyImage} disabled={!previewElement} title="Copy Image (static)" aria-label="Copy Image">
     <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
       <rect x="5" y="6" width="8" height="8" rx="1" />
       <path d="M11 6V4.5A1.5 1.5 0 0 0 9.5 3h-6A1.5 1.5 0 0 0 2 4.5V10" />
@@ -243,13 +235,25 @@
     </svg>
   </button>
 
-  <!-- SVG Download Button -->
+  <!-- Separator -->
+  <div class="w-px h-4 bg-doom-surface/50"></div>
+
+  <!-- Animated WebP -->
   <button
-    class="doom-btn p-1.5"
-    onclick={handleDownloadSvg}
-    title="Download SVG"
-    aria-label="Download SVG"
+    class="doom-btn p-1.5 {animatedWebpExporting ? 'animate-pulse text-doom-orange' : ''}"
+    onclick={handleDownloadAnimatedWebp}
+    disabled={!previewElement || animatedWebpExporting || !hasAnimations}
+    title={!hasAnimations ? 'Animated WebP (enable color shift or CRT flicker)' : animatedWebpExporting ? 'Exporting animated WebP...' : 'Animated WebP (color shift + flicker)'}
+    aria-label="Download Animated WebP"
   >
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+      <rect x="2" y="3" width="12" height="10" rx="1" />
+      <path d="M5 8h2l1-2.5 1.5 5L11 8h1" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.2" />
+    </svg>
+  </button>
+
+  <!-- SVG (animated) -->
+  <button class="doom-btn p-1.5" onclick={handleDownloadSvg} title="SVG (with CSS animations)" aria-label="Download SVG">
     <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
       <path d="M3 3l10 0" />
       <path d="M3 3l0 10" />
@@ -261,13 +265,19 @@
     </svg>
   </button>
 
-  <!-- ANSI Download Button -->
-  <button
-    class="doom-btn p-1.5"
-    onclick={handleDownloadAnsi}
-    title="Download ANSI"
-    aria-label="Download ANSI"
-  >
+  <!-- HTML (animated) -->
+  <button class="doom-btn p-1.5" onclick={handleDownloadHtml} title="HTML (with JS animations)" aria-label="Download HTML">
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+      <path d="M3 3l2 10h6l2-10" />
+      <path d="M5 7h6" />
+    </svg>
+  </button>
+
+  <!-- Separator -->
+  <div class="w-px h-4 bg-doom-surface/50"></div>
+
+  <!-- ANSI -->
+  <button class="doom-btn p-1.5" onclick={handleDownloadAnsi} title="ANSI (terminal colors)" aria-label="Download ANSI">
     <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
       <rect x="2" y="3" width="12" height="10" rx="1" />
       <path d="M4 5.5h3" stroke-width="1" />
@@ -280,13 +290,8 @@
     </svg>
   </button>
 
-  <!-- Banner Download Button -->
-  <button
-    class="doom-btn p-1.5"
-    onclick={handleDownloadBanner}
-    title="Download Banner Script"
-    aria-label="Download Banner Script"
-  >
+  <!-- Banner -->
+  <button class="doom-btn p-1.5" onclick={handleDownloadBanner} title="Banner (shell script)" aria-label="Download Banner Script">
     <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
       <rect x="1.5" y="2.5" width="13" height="11" rx="1.5" />
       <path d="M4.5 6l2 2-2 2" stroke-linecap="round" stroke-linejoin="round" />
@@ -294,39 +299,16 @@
     </svg>
   </button>
 
-  <!-- HTML Download Button -->
-  <button
-    class="doom-btn p-1.5"
-    onclick={handleDownloadHtml}
-    title="Download HTML"
-    aria-label="Download HTML"
-  >
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
-      <path d="M3 3l2 10h6l2-10" />
-      <path d="M5 7h6" />
-    </svg>
-  </button>
-
-  <!-- JSON Download Button -->
-  <button
-    class="doom-btn p-1.5"
-    onclick={handleDownloadJson}
-    title="Download JSON"
-    aria-label="Download JSON"
-  >
+  <!-- JSON -->
+  <button class="doom-btn p-1.5" onclick={handleDownloadJson} title="JSON (save preset)" aria-label="Download JSON">
     <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
       <path d="M5 3C4 3 3 4 3 5v1.5C3 7.5 2 8 2 8s1 .5 1 1.5V11c0 1 1 2 2 2" stroke-linecap="round" />
       <path d="M11 3c1 0 2 1 2 2v1.5C13 7.5 14 8 14 8s-1 .5-1 1.5V11c0 1-1 2-2 2" stroke-linecap="round" />
     </svg>
   </button>
 
-  <!-- Import JSON Button -->
-  <button
-    class="doom-btn p-1.5"
-    onclick={() => fileInputEl.click()}
-    title="Import JSON"
-    aria-label="Import JSON"
-  >
+  <!-- Import -->
+  <button class="doom-btn p-1.5" onclick={() => fileInputEl.click()} title="Import JSON preset" aria-label="Import JSON">
     <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
       <path d="M8 10V3" stroke-linecap="round" />
       <path d="M5 6l3-3 3 3" stroke-linecap="round" stroke-linejoin="round" />

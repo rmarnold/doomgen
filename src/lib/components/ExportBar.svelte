@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { copyText, copyImage, downloadPng, downloadAnimatedWebp, downloadSvg, downloadAnsi, downloadBanner, downloadHtml, downloadJson, importJson } from '$lib/engine/exporter';
+  import { copyText, copyImage, downloadPng, downloadWebp, downloadAnimatedWebp, downloadSvg, downloadAnsi, downloadBanner, downloadHtml, downloadJson, importJson } from '$lib/engine/exporter';
   import type { ColoredLine } from '$lib/engine/colorizer';
   import { appState } from '$lib/stores/state.svelte';
   import { getPaletteById } from '$lib/theme/palettes';
@@ -17,7 +17,7 @@
   let transparentBg = $state(false);
   let feedback = $state<string | null>(null);
   let feedbackTimer: ReturnType<typeof setTimeout>;
-  let webpExporting = $state(false);
+  let animatedWebpExporting = $state(false);
   let fileInputEl: HTMLInputElement;
 
   function showFeedback(msg: string) {
@@ -49,7 +49,7 @@
     if (!previewElement) return;
     try {
       await downloadPng(previewElement, filename, { transparentBg, bgColor: appState.bgColor });
-      showFeedback('PNG downloaded!');
+      showFeedback('PNG saved!');
     } catch {
       showFeedback('Download failed');
     }
@@ -57,7 +57,17 @@
 
   async function handleDownloadWebp() {
     if (!previewElement) return;
-    webpExporting = true;
+    try {
+      await downloadWebp(previewElement, filename, { transparentBg, bgColor: appState.bgColor });
+      showFeedback('WebP saved!');
+    } catch {
+      showFeedback('Download failed');
+    }
+  }
+
+  async function handleDownloadAnimatedWebp() {
+    if (!previewElement) return;
+    animatedWebpExporting = true;
     try {
       await downloadAnimatedWebp(
         previewElement,
@@ -69,14 +79,14 @@
           crtFlicker: appState.crtFlicker,
           transparentBg,
         },
-        (frame, total) => showFeedback(`WebP ${frame}/${total}`),
+        (frame, total) => showFeedback(`Encoding ${frame}/${total}`),
       );
-      showFeedback('WebP downloaded!');
+      showFeedback('Animated WebP saved!');
     } catch (e) {
       console.error('Animated WebP export failed:', e);
-      showFeedback('Download failed');
+      showFeedback('Export failed');
     } finally {
-      webpExporting = false;
+      animatedWebpExporting = false;
     }
   }
 
@@ -96,7 +106,7 @@
         pixelation: appState.pixelation,
         colorShiftSpeed: appState.colorShiftSpeed,
       });
-      showFeedback('SVG downloaded!');
+      showFeedback('SVG saved!');
     } catch {
       showFeedback('Download failed');
     }
@@ -105,7 +115,7 @@
   function handleDownloadAnsi() {
     try {
       downloadAnsi(getColoredLines(), filename);
-      showFeedback('ANSI downloaded!');
+      showFeedback('ANSI saved!');
     } catch {
       showFeedback('Download failed');
     }
@@ -114,7 +124,7 @@
   function handleDownloadBanner() {
     try {
       downloadBanner(getColoredLines(), filename);
-      showFeedback('Banner downloaded!');
+      showFeedback('Banner saved!');
     } catch {
       showFeedback('Download failed');
     }
@@ -136,7 +146,7 @@
         pixelation: appState.pixelation,
         colorShiftSpeed: appState.colorShiftSpeed,
       });
-      showFeedback('HTML downloaded!');
+      showFeedback('HTML saved!');
     } catch {
       showFeedback('Download failed');
     }
@@ -145,7 +155,7 @@
   function handleDownloadJson() {
     try {
       downloadJson(getColoredLines(), filename);
-      showFeedback('JSON downloaded!');
+      showFeedback('JSON saved!');
     } catch {
       showFeedback('Download failed');
     }
@@ -160,35 +170,60 @@
     input.value = '';
   }
 
+  const hasAnimations = $derived(appState.colorShiftSpeed > 0 || (appState.crtEnabled && appState.crtFlicker > 0));
+
   const btnClass = 'rounded border border-doom-surface bg-doom-black px-4 py-2 text-sm font-mono text-doom-text-muted transition-colors hover:border-doom-red hover:text-doom-text active:bg-doom-surface';
+  const labelClass = 'text-[10px] font-mono uppercase tracking-widest text-doom-text-muted/50';
 </script>
 
-<div class="flex flex-wrap items-center gap-3">
-  <button class={btnClass} onclick={handleCopyText}>Copy Text</button>
-  <label class="flex items-center gap-1.5 text-sm font-mono text-doom-text-muted cursor-pointer select-none">
+<div class="flex flex-col gap-3">
+  <!-- Row 1: Static image exports -->
+  <div class="flex flex-wrap items-center gap-3">
+    <span class={labelClass}>Static</span>
+    <label class="flex items-center gap-1.5 text-sm font-mono text-doom-text-muted cursor-pointer select-none">
+      <input
+        type="checkbox"
+        bind:checked={transparentBg}
+        class="accent-doom-red w-3.5 h-3.5 cursor-pointer"
+      />
+      Transparent
+    </label>
+    <button class={btnClass} onclick={handleDownloadPng} disabled={!previewElement}>PNG</button>
+    <button class={btnClass} onclick={handleDownloadWebp} disabled={!previewElement}>WebP</button>
+    <button class={btnClass} onclick={handleCopyImage} disabled={!previewElement}>Copy Image</button>
+  </div>
+
+  <!-- Row 2: Animated exports -->
+  <div class="flex flex-wrap items-center gap-3">
+    <span class={labelClass}>Animated</span>
+    <button class={btnClass} onclick={handleDownloadAnimatedWebp} disabled={!previewElement || animatedWebpExporting || !hasAnimations}>
+      {animatedWebpExporting ? 'Exporting...' : 'WebP'}
+    </button>
+    <button class={btnClass} onclick={handleDownloadSvg}>SVG</button>
+    <button class={btnClass} onclick={handleDownloadHtml}>HTML</button>
+    {#if !hasAnimations}
+      <span class="text-[11px] font-mono text-doom-text-muted/40 italic">Enable color shift or CRT flicker for animations</span>
+    {/if}
+  </div>
+
+  <!-- Row 3: Text + data exports -->
+  <div class="flex flex-wrap items-center gap-3">
+    <span class={labelClass}>Text</span>
+    <button class={btnClass} onclick={handleCopyText}>Copy Text</button>
+    <button class={btnClass} onclick={handleDownloadAnsi}>ANSI</button>
+    <button class={btnClass} onclick={handleDownloadBanner}>Banner</button>
+    <span class="text-doom-surface">|</span>
+    <span class={labelClass}>Data</span>
+    <button class={btnClass} onclick={handleDownloadJson}>JSON</button>
+    <button class={btnClass} onclick={() => fileInputEl.click()}>Import</button>
     <input
-      type="checkbox"
-      bind:checked={transparentBg}
-      class="accent-doom-red w-3.5 h-3.5 cursor-pointer"
+      bind:this={fileInputEl}
+      type="file"
+      accept=".json,.doomgen.json"
+      onchange={handleImportJson}
+      class="hidden"
     />
-    Transparent
-  </label>
-  <button class={btnClass} onclick={handleDownloadPng} disabled={!previewElement}>PNG</button>
-  <button class={btnClass} onclick={handleDownloadWebp} disabled={!previewElement || webpExporting}>{webpExporting ? 'Exporting...' : 'WebP'}</button>
-  <button class={btnClass} onclick={handleCopyImage} disabled={!previewElement}>Copy Image</button>
-  <button class={btnClass} onclick={handleDownloadSvg}>SVG</button>
-  <button class={btnClass} onclick={handleDownloadAnsi}>ANSI</button>
-  <button class={btnClass} onclick={handleDownloadBanner}>Banner</button>
-  <button class={btnClass} onclick={handleDownloadHtml}>HTML</button>
-  <button class={btnClass} onclick={handleDownloadJson}>JSON</button>
-  <button class={btnClass} onclick={() => fileInputEl.click()}>Import</button>
-  <input
-    bind:this={fileInputEl}
-    type="file"
-    accept=".json,.doomgen.json"
-    onchange={handleImportJson}
-    class="hidden"
-  />
+  </div>
 
   {#if feedback}
     <span class="text-sm text-doom-green">{feedback}</span>
