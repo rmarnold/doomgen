@@ -1,7 +1,9 @@
 <script lang="ts">
-  import { copyText, copyImage, downloadPng, downloadSvg, downloadAnsi, downloadBanner } from '$lib/engine/exporter';
+  import { copyText, copyImage, downloadPng, downloadSvg, downloadAnsi, downloadBanner, downloadHtml, downloadJson, importJson } from '$lib/engine/exporter';
   import type { ColoredLine } from '$lib/engine/colorizer';
   import { appState } from '$lib/stores/state.svelte';
+  import { getPaletteById } from '$lib/theme/palettes';
+  import { getGlowColor } from '$lib/engine/colorizer';
 
   interface Props {
     asciiLines: string[];
@@ -15,6 +17,7 @@
   let transparentBg = $state(false);
   let feedback = $state<string | null>(null);
   let feedbackTimer: ReturnType<typeof setTimeout>;
+  let fileInputEl: HTMLInputElement;
 
   function showFeedback(msg: string) {
     feedback = msg;
@@ -78,6 +81,41 @@
     }
   }
 
+  function handleDownloadHtml() {
+    try {
+      const palette = getPaletteById(appState.paletteId);
+      const glowColor = getGlowColor(palette);
+      downloadHtml(coloredLines, filename, {
+        bgColor: appState.bgColor,
+        glowIntensity: appState.glowIntensity,
+        glowColor,
+        shadowOffset: appState.shadowOffset,
+        crtEnabled: appState.crtEnabled,
+      });
+      showFeedback('HTML downloaded!');
+    } catch {
+      showFeedback('Download failed');
+    }
+  }
+
+  function handleDownloadJson() {
+    try {
+      downloadJson(coloredLines, filename);
+      showFeedback('JSON downloaded!');
+    } catch {
+      showFeedback('Download failed');
+    }
+  }
+
+  async function handleImportJson(e: Event) {
+    const input = e.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+    const success = await importJson(file);
+    showFeedback(success ? 'Imported!' : 'Import failed');
+    input.value = '';
+  }
+
   const btnClass = 'rounded border border-doom-surface bg-doom-black px-4 py-2 text-sm font-mono text-doom-text-muted transition-colors hover:border-doom-red hover:text-doom-text active:bg-doom-surface';
 </script>
 
@@ -96,6 +134,16 @@
   <button class={btnClass} onclick={handleDownloadSvg}>SVG</button>
   <button class={btnClass} onclick={handleDownloadAnsi}>ANSI</button>
   <button class={btnClass} onclick={handleDownloadBanner}>Banner</button>
+  <button class={btnClass} onclick={handleDownloadHtml}>HTML</button>
+  <button class={btnClass} onclick={handleDownloadJson}>JSON</button>
+  <button class={btnClass} onclick={() => fileInputEl.click()}>Import</button>
+  <input
+    bind:this={fileInputEl}
+    type="file"
+    accept=".json,.doomgen.json"
+    onchange={handleImportJson}
+    class="hidden"
+  />
 
   {#if feedback}
     <span class="text-sm text-doom-green">{feedback}</span>

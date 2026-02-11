@@ -20,6 +20,12 @@ export interface AppState {
   dripDensity: number;      // 0-100
   shadowOffset: number;     // 0-6
   distressIntensity: number; // 0-50
+  pixelation: number;        // 0-10 (0 = off)
+  crtEnabled: boolean;
+  crtCurvature: number;     // 0-100
+  crtFlicker: number;       // 0-100
+  screenShake: boolean;     // momentary trigger
+  colorShiftSpeed: number;  // 0-100 (0 = off)
 
   // View
   zoom: number;              // 0 = auto, 25-400 = manual %
@@ -42,6 +48,12 @@ const defaults: AppState = {
   dripDensity: 0,
   shadowOffset: 0,
   distressIntensity: 0,
+  pixelation: 0,
+  crtEnabled: false,
+  crtCurvature: 50,
+  crtFlicker: 30,
+  screenShake: false,
+  colorShiftSpeed: 0,
   zoom: 0,
   bgColor: '#0a0a0a',
   animationsEnabled: true,
@@ -60,6 +72,12 @@ function createAppState() {
   let dripDensity = $state(defaults.dripDensity);
   let shadowOffset = $state(defaults.shadowOffset);
   let distressIntensity = $state(defaults.distressIntensity);
+  let pixelation = $state(defaults.pixelation);
+  let crtEnabled = $state(defaults.crtEnabled);
+  let crtCurvature = $state(defaults.crtCurvature);
+  let crtFlicker = $state(defaults.crtFlicker);
+  let screenShake = $state(defaults.screenShake);
+  let colorShiftSpeed = $state(defaults.colorShiftSpeed);
   let zoom = $state(defaults.zoom);
   let bgColor = $state(defaults.bgColor);
   let animationsEnabled = $state(defaults.animationsEnabled);
@@ -101,6 +119,24 @@ function createAppState() {
     get distressIntensity() { return distressIntensity; },
     set distressIntensity(v: number) { distressIntensity = v; },
 
+    get pixelation() { return pixelation; },
+    set pixelation(v: number) { pixelation = v; },
+
+    get crtEnabled() { return crtEnabled; },
+    set crtEnabled(v: boolean) { crtEnabled = v; },
+
+    get crtCurvature() { return crtCurvature; },
+    set crtCurvature(v: number) { crtCurvature = v; },
+
+    get crtFlicker() { return crtFlicker; },
+    set crtFlicker(v: number) { crtFlicker = v; },
+
+    get screenShake() { return screenShake; },
+    set screenShake(v: boolean) { screenShake = v; },
+
+    get colorShiftSpeed() { return colorShiftSpeed; },
+    set colorShiftSpeed(v: number) { colorShiftSpeed = v; },
+
     get zoom() { return zoom; },
     set zoom(v: number) { zoom = v; },
 
@@ -123,6 +159,12 @@ function createAppState() {
       dripDensity = defaults.dripDensity;
       shadowOffset = defaults.shadowOffset;
       distressIntensity = defaults.distressIntensity;
+      pixelation = defaults.pixelation;
+      crtEnabled = defaults.crtEnabled;
+      crtCurvature = defaults.crtCurvature;
+      crtFlicker = defaults.crtFlicker;
+      screenShake = defaults.screenShake;
+      colorShiftSpeed = defaults.colorShiftSpeed;
       zoom = defaults.zoom;
       bgColor = defaults.bgColor;
       animationsEnabled = defaults.animationsEnabled;

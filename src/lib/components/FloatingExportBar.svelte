@@ -1,7 +1,9 @@
 <script lang="ts">
-  import { copyText, copyImage, downloadPng, downloadSvg, downloadAnsi, downloadBanner } from '$lib/engine/exporter';
+  import { copyText, copyImage, downloadPng, downloadSvg, downloadAnsi, downloadBanner, downloadHtml, downloadJson, importJson } from '$lib/engine/exporter';
   import type { ColoredLine } from '$lib/engine/colorizer';
   import { appState } from '$lib/stores/state.svelte';
+  import { getPaletteById } from '$lib/theme/palettes';
+  import { getGlowColor } from '$lib/engine/colorizer';
 
   interface Props {
     asciiLines: string[];
@@ -15,6 +17,7 @@
   let transparentBg = $state(false);
   let showSuccess = $state(false);
   let successTimer: ReturnType<typeof setTimeout>;
+  let fileInputEl: HTMLInputElement;
 
   function showFeedback() {
     showSuccess = true;
@@ -76,6 +79,41 @@
     } catch {
       // Silent failure for floating bar
     }
+  }
+
+  function handleDownloadHtml() {
+    try {
+      const palette = getPaletteById(appState.paletteId);
+      const glowColor = getGlowColor(palette);
+      downloadHtml(coloredLines, filename, {
+        bgColor: appState.bgColor,
+        glowIntensity: appState.glowIntensity,
+        glowColor,
+        shadowOffset: appState.shadowOffset,
+        crtEnabled: appState.crtEnabled,
+      });
+      showFeedback();
+    } catch {
+      // Silent failure for floating bar
+    }
+  }
+
+  function handleDownloadJson() {
+    try {
+      downloadJson(coloredLines, filename);
+      showFeedback();
+    } catch {
+      // Silent failure for floating bar
+    }
+  }
+
+  async function handleImportJson(e: Event) {
+    const input = e.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+    await importJson(file);
+    showFeedback();
+    input.value = '';
   }
 </script>
 
@@ -199,6 +237,53 @@
       <path d="M8 10h3.5" stroke-linecap="round" />
     </svg>
   </button>
+
+  <!-- HTML Download Button -->
+  <button
+    class="doom-btn p-1.5"
+    onclick={handleDownloadHtml}
+    title="Download HTML"
+    aria-label="Download HTML"
+  >
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+      <path d="M3 3l2 10h6l2-10" />
+      <path d="M5 7h6" />
+    </svg>
+  </button>
+
+  <!-- JSON Download Button -->
+  <button
+    class="doom-btn p-1.5"
+    onclick={handleDownloadJson}
+    title="Download JSON"
+    aria-label="Download JSON"
+  >
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+      <path d="M5 3C4 3 3 4 3 5v1.5C3 7.5 2 8 2 8s1 .5 1 1.5V11c0 1 1 2 2 2" stroke-linecap="round" />
+      <path d="M11 3c1 0 2 1 2 2v1.5C13 7.5 14 8 14 8s-1 .5-1 1.5V11c0 1-1 2-2 2" stroke-linecap="round" />
+    </svg>
+  </button>
+
+  <!-- Import JSON Button -->
+  <button
+    class="doom-btn p-1.5"
+    onclick={() => fileInputEl.click()}
+    title="Import JSON"
+    aria-label="Import JSON"
+  >
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+      <path d="M8 10V3" stroke-linecap="round" />
+      <path d="M5 6l3-3 3 3" stroke-linecap="round" stroke-linejoin="round" />
+      <path d="M3 10v2.5A1.5 1.5 0 0 0 4.5 14h7a1.5 1.5 0 0 0 1.5-1.5V10" stroke-linecap="round" />
+    </svg>
+  </button>
+  <input
+    bind:this={fileInputEl}
+    type="file"
+    accept=".json,.doomgen.json"
+    onchange={handleImportJson}
+    class="hidden"
+  />
 
   <!-- Success Indicator -->
   {#if showSuccess}

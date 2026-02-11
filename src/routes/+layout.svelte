@@ -3,6 +3,7 @@
   import { onMount } from 'svelte';
   import gsap from 'gsap';
   import { preloadDefaultFont } from '$lib/engine/figlet-renderer';
+  import { appState } from '$lib/stores/state.svelte';
 
   let { children } = $props();
   let container: HTMLDivElement;
@@ -10,6 +11,13 @@
   onMount(async () => {
     await document.fonts.load('16px "JetBrains Mono"');
     preloadDefaultFont();
+
+    // a11y guard — skip animations if reduced motion preferred or animations disabled
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (prefersReducedMotion || !appState.animationsEnabled) {
+      container.style.opacity = '1';
+      return;
+    }
 
     // Stagger entrance animations
     const header = container.querySelector('[data-anim="header"]');

@@ -24,6 +24,10 @@
   const onDrip = throttledSlider((v) => (appState.dripDensity = v));
   const onShadow = throttledSlider((v) => (appState.shadowOffset = v));
   const onDistress = throttledSlider((v) => (appState.distressIntensity = v));
+  const onPixelation = throttledSlider((v) => (appState.pixelation = v));
+  const onCrtCurvature = throttledSlider((v) => (appState.crtCurvature = v));
+  const onCrtFlicker = throttledSlider((v) => (appState.crtFlicker = v));
+  const onColorShift = throttledSlider((v) => (appState.colorShiftSpeed = v));
   const onZoom = throttledSlider((v) => (appState.zoom = v));
   const onPaletteStart = throttledSlider((v) => (appState.paletteStart = v));
   const onPaletteEnd = throttledSlider((v) => (appState.paletteEnd = v));
@@ -143,5 +147,64 @@
       </span>
       <input type="range" min="0" max="50" value={appState.distressIntensity} oninput={onDistress} />
     </label>
+
+    <!-- Pixelation -->
+    <label class="block">
+      <span class="mb-0.5 flex justify-between text-[0.65rem] uppercase tracking-[0.15em] text-doom-text-muted" style="font-family: var(--font-doom-ui)">
+        <span>Pixelation</span>
+        <span class="font-mono normal-case tracking-normal">{appState.pixelation === 0 ? 'Off' : appState.pixelation}</span>
+      </span>
+      <input type="range" min="0" max="10" value={appState.pixelation} oninput={onPixelation} />
+    </label>
+
+    <!-- Color Shift -->
+    <label class="block">
+      <span class="mb-0.5 flex justify-between text-[0.65rem] uppercase tracking-[0.15em] text-doom-text-muted" style="font-family: var(--font-doom-ui)">
+        <span>Color Shift</span>
+        <span class="font-mono normal-case tracking-normal">{appState.colorShiftSpeed === 0 ? 'Off' : `${appState.colorShiftSpeed}%`}</span>
+      </span>
+      <input type="range" min="0" max="100" value={appState.colorShiftSpeed} oninput={onColorShift} />
+    </label>
+  </div>
+
+  <!-- CRT Monitor -->
+  <div>
+    <label class="flex items-center gap-1.5 text-[0.65rem] uppercase tracking-[0.15em] text-doom-text-muted cursor-pointer select-none" style="font-family: var(--font-doom-ui)">
+      <input
+        type="checkbox"
+        checked={appState.crtEnabled}
+        onchange={() => (appState.crtEnabled = !appState.crtEnabled)}
+        class="accent-doom-red w-3.5 h-3.5 cursor-pointer"
+      />
+      CRT Monitor
+    </label>
+    {#if appState.crtEnabled}
+      <div class="mt-2 grid grid-cols-2 gap-3">
+        <label class="block">
+          <span class="mb-0.5 flex justify-between text-[0.65rem] uppercase tracking-[0.15em] text-doom-text-muted" style="font-family: var(--font-doom-ui)">
+            <span>Curvature</span>
+            <span class="font-mono normal-case tracking-normal">{appState.crtCurvature}%</span>
+          </span>
+          <input type="range" min="0" max="100" value={appState.crtCurvature} oninput={onCrtCurvature} />
+        </label>
+        <label class="block">
+          <span class="mb-0.5 flex justify-between text-[0.65rem] uppercase tracking-[0.15em] text-doom-text-muted" style="font-family: var(--font-doom-ui)">
+            <span>Flicker</span>
+            <span class="font-mono normal-case tracking-normal">{appState.crtFlicker}%</span>
+          </span>
+          <input type="range" min="0" max="100" value={appState.crtFlicker} oninput={onCrtFlicker} />
+        </label>
+      </div>
+    {/if}
+  </div>
+
+  <!-- Screen Shake -->
+  <div>
+    <button
+      class="doom-btn text-xs"
+      onclick={() => (appState.screenShake = true)}
+    >
+      Screen Shake
+    </button>
   </div>
 </div>
