@@ -170,16 +170,37 @@
     input.value = '';
   }
 
-  const hasAnimations = $derived(appState.colorShiftSpeed > 0 || (appState.crtEnabled && appState.crtFlicker > 0));
+  const hasColorShift = $derived(appState.colorShiftSpeed > 0);
+  const hasFlicker = $derived(appState.crtEnabled && appState.crtFlicker > 0);
+  const hasAnimations = $derived(hasColorShift || hasFlicker);
+
+  const activeEffects = $derived(() => {
+    const effects: string[] = [];
+    if (hasColorShift) effects.push('Color Shift');
+    if (hasFlicker) effects.push('CRT Flicker');
+    return effects;
+  });
 
   const btnClass = 'rounded border border-doom-surface bg-doom-black px-4 py-2 text-sm font-mono text-doom-text-muted transition-colors hover:border-doom-red hover:text-doom-text active:bg-doom-surface';
   const labelClass = 'text-[10px] font-mono uppercase tracking-widest text-doom-text-muted/50';
 </script>
 
 <div class="flex flex-col gap-3">
+  <!-- Animation notice -->
+  {#if hasAnimations}
+    <div class="flex items-start gap-2 rounded border border-doom-orange/30 bg-doom-orange/5 px-3 py-2 text-xs font-mono leading-relaxed">
+      <span class="text-doom-orange mt-0.5 shrink-0">!</span>
+      <div class="text-doom-text-muted">
+        <span class="text-doom-orange">{activeEffects().join(' + ')}</span> active —
+        PNG, WebP, and Copy Image capture a single still frame.
+        Use <strong class="text-doom-text">Animated WebP</strong>, <strong class="text-doom-text">SVG</strong>, or <strong class="text-doom-text">HTML</strong> to preserve animations.
+      </div>
+    </div>
+  {/if}
+
   <!-- Row 1: Static image exports -->
   <div class="flex flex-wrap items-center gap-3">
-    <span class={labelClass}>Static</span>
+    <span class={labelClass}>Still</span>
     <label class="flex items-center gap-1.5 text-sm font-mono text-doom-text-muted cursor-pointer select-none">
       <input
         type="checkbox"
@@ -196,13 +217,13 @@
   <!-- Row 2: Animated exports -->
   <div class="flex flex-wrap items-center gap-3">
     <span class={labelClass}>Animated</span>
-    <button class={btnClass} onclick={handleDownloadAnimatedWebp} disabled={!previewElement || animatedWebpExporting || !hasAnimations}>
-      {animatedWebpExporting ? 'Exporting...' : 'WebP'}
+    <button class="{btnClass} {hasAnimations ? 'border-doom-orange/50 text-doom-orange hover:border-doom-orange' : ''}" onclick={handleDownloadAnimatedWebp} disabled={!previewElement || animatedWebpExporting || !hasAnimations}>
+      {animatedWebpExporting ? 'Exporting...' : 'Animated WebP'}
     </button>
-    <button class={btnClass} onclick={handleDownloadSvg}>SVG</button>
-    <button class={btnClass} onclick={handleDownloadHtml}>HTML</button>
+    <button class="{btnClass} {hasAnimations ? 'border-doom-orange/50 text-doom-orange hover:border-doom-orange' : ''}" onclick={handleDownloadSvg}>SVG</button>
+    <button class="{btnClass} {hasAnimations ? 'border-doom-orange/50 text-doom-orange hover:border-doom-orange' : ''}" onclick={handleDownloadHtml}>HTML</button>
     {#if !hasAnimations}
-      <span class="text-[11px] font-mono text-doom-text-muted/40 italic">Enable color shift or CRT flicker for animations</span>
+      <span class="text-[11px] font-mono text-doom-text-muted/40 italic">No animations active</span>
     {/if}
   </div>
 

@@ -253,7 +253,8 @@ async function getWebPXMux() {
   if (xMuxLoading) return xMuxLoading;
   xMuxLoading = (async () => {
     // Use the browser-targeted UMD dist build (not CJS lib which pulls in Node.js 'ws' module)
-    const mod = await import('webpxmux/dist/webpxmux');
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const mod: any = await import('webpxmux/dist/webpxmux');
     const create = typeof mod.default === 'function' ? mod.default : mod.default?.default;
     if (typeof create !== 'function') throw new Error('webpxmux: failed to resolve factory function');
     const inst = create(`${base}/webpxmux.wasm`);
