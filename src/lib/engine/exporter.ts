@@ -806,7 +806,7 @@ export function downloadJson(coloredLines: ColoredLine[], filename: string): voi
     crtEnabled: appState.crtEnabled,
     crtCurvature: appState.crtCurvature,
     crtFlicker: appState.crtFlicker,
-    screenShake: false,
+    screenShake: appState.screenShake,
     colorShiftSpeed: appState.colorShiftSpeed,
     removeBlack: appState.removeBlack,
     zoom: appState.zoom,
@@ -851,6 +851,7 @@ export async function importJson(file: File): Promise<boolean> {
     if (s.crtEnabled !== undefined) appState.crtEnabled = s.crtEnabled as boolean;
     if (s.crtCurvature !== undefined) appState.crtCurvature = s.crtCurvature as number;
     if (s.crtFlicker !== undefined) appState.crtFlicker = s.crtFlicker as number;
+    if (s.screenShake !== undefined) appState.screenShake = s.screenShake as number;
     if (s.colorShiftSpeed !== undefined) appState.colorShiftSpeed = s.colorShiftSpeed as number;
     if (s.removeBlack !== undefined) appState.removeBlack = s.removeBlack as boolean;
     if (s.zoom !== undefined) appState.zoom = s.zoom as number;

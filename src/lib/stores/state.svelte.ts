@@ -24,7 +24,7 @@ export interface AppState {
   crtEnabled: boolean;
   crtCurvature: number;     // 0-100
   crtFlicker: number;       // 0-100
-  screenShake: boolean;     // momentary trigger
+  screenShake: number;      // 0-100 (0 = off, higher = more frequent)
   colorShiftSpeed: number;  // 0-100 (0 = off)
   removeBlack: boolean;     // filter near-black colors from palette
 
@@ -54,7 +54,7 @@ const defaults: AppState = {
   crtEnabled: true,
   crtCurvature: 16,
   crtFlicker: 34,
-  screenShake: false,
+  screenShake: 0,
   colorShiftSpeed: 15,
   removeBlack: true,
   zoom: 100,
@@ -138,7 +138,7 @@ function createAppState() {
     set crtFlicker(v: number) { crtFlicker = v; },
 
     get screenShake() { return screenShake; },
-    set screenShake(v: boolean) { screenShake = v; },
+    set screenShake(v: number) { screenShake = v; },
 
     get colorShiftSpeed() { return colorShiftSpeed; },
     set colorShiftSpeed(v: number) { colorShiftSpeed = v; },

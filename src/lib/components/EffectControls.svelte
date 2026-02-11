@@ -28,6 +28,7 @@
   const onCrtCurvature = throttledSlider((v) => (appState.crtCurvature = v));
   const onCrtFlicker = throttledSlider((v) => (appState.crtFlicker = v));
   const onColorShift = throttledSlider((v) => (appState.colorShiftSpeed = v));
+  const onScreenShake = throttledSlider((v) => (appState.screenShake = v));
   const onZoom = throttledSlider((v) => (appState.zoom = v));
   const onPaletteStart = throttledSlider((v) => (appState.paletteStart = v));
   const onPaletteEnd = throttledSlider((v) => (appState.paletteEnd = v));
@@ -187,6 +188,15 @@
       </span>
       <input type="range" min="0" max="100" value={appState.colorShiftSpeed} oninput={onColorShift} />
     </label>
+
+    <!-- Screen Shake -->
+    <label class="block" title="Randomly shake the preview at an interval — higher values shake more frequently and intensely">
+      <span class="mb-0.5 flex justify-between text-[0.65rem] uppercase tracking-[0.15em] text-doom-text-muted" style="font-family: var(--font-doom-ui)">
+        <span>Screen Shake</span>
+        <span class="font-mono normal-case tracking-normal">{appState.screenShake === 0 ? 'Off' : `${appState.screenShake}%`}</span>
+      </span>
+      <input type="range" min="0" max="100" value={appState.screenShake} oninput={onScreenShake} />
+    </label>
   </div>
 
   <!-- CRT Monitor -->
@@ -218,16 +228,5 @@
         </label>
       </div>
     {/if}
-  </div>
-
-  <!-- Screen Shake -->
-  <div>
-    <button
-      class="doom-btn text-xs"
-      onclick={() => (appState.screenShake = true)}
-      title="Trigger a one-shot screen shake animation"
-    >
-      Screen Shake
-    </button>
   </div>
 </div>

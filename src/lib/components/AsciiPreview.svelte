@@ -116,22 +116,39 @@
     }
   });
 
-  // Screen shake — GSAP diminishing oscillation
-  $effect(() => {
-    if (!appState.screenShake) return;
-    appState.screenShake = false;
-
-    if (!preRef || !appState.animationsEnabled) return;
-    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (prefersReducedMotion) return;
-
+  // Screen shake — randomized interval loop
+  function triggerShake() {
+    if (!preRef) return;
     import('gsap').then(({ default: gsap }) => {
+      const intensity = 2 + (appState.screenShake / 100) * 8;
       const tl = gsap.timeline();
-      const offsets = [8, -6, 5, -3, 2, -1, 0];
+      const offsets = [1, -0.75, 0.6, -0.4, 0.25, -0.1, 0].map(f => f * intensity);
       offsets.forEach((x, i) => {
         tl.to(preRef!, { x, y: x * 0.5, duration: 0.05, ease: 'power1.inOut' }, i * 0.05);
       });
     });
+  }
+
+  $effect(() => {
+    const freq = appState.screenShake;
+    if (freq <= 0 || !appState.animationsEnabled) return;
+
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (prefersReducedMotion) return;
+
+    // Interval: 100 → ~0.5s, 1 → ~10s, with random jitter
+    const baseMs = Math.max(500, 10000 - freq * 95);
+
+    function scheduleNext() {
+      const jitter = baseMs * (0.5 + Math.random());
+      return setTimeout(() => {
+        triggerShake();
+        timerId = scheduleNext();
+      }, jitter);
+    }
+
+    let timerId = scheduleNext();
+    return () => clearTimeout(timerId);
   });
 
   export function getPreviewElement(): HTMLDivElement {
