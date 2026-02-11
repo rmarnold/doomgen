@@ -297,8 +297,6 @@ input[type="range"]:focus::-webkit-slider-thumb {
 .crt-curvature {
   /* Scale: 0 = flat, 100 = heavily curved CRT bulge */
   --_curve: var(--crt-curve, 50);
-  /* Percentage-based radius so it scales with the element size */
-  border-radius: calc(var(--_curve) * 0.2%) / calc(var(--_curve) * 0.35%);
   overflow: hidden;
   /* Layered inset shadows for barrel-distortion depth illusion */
   box-shadow:

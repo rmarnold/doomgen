@@ -341,7 +341,7 @@
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
     const img = ctx.createImageData(size, size);
-    const k = 0.5;
+    const k = 0.3;
     for (let y = 0; y < size; y++) {
       for (let x = 0; x < size; x++) {
         const u = (x / (size - 1)) * 2 - 1;
