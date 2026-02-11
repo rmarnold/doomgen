@@ -398,7 +398,8 @@
 
 <div
   bind:this={previewEl}
-  class="relative flex min-h-[250px] flex-col items-center justify-center overflow-auto p-6 sm:min-h-[350px]
+  class="relative flex min-h-[250px] flex-col items-center justify-center p-6 sm:min-h-[350px]
+    {appState.crtEnabled && appState.crtCurvature > 0 ? 'overflow-visible' : 'overflow-auto'}
     {appState.transparentBg ? '' : 'metal-panel-inset'}
     {!appState.transparentBg && !appState.crtEnabled ? 'scanlines preview-glow-border' : ''}"
   style="background-color: {appState.transparentBg ? 'transparent' : appState.bgColor}; {appState.transparentBg ? 'background-image: repeating-conic-gradient(#222 0% 25%, #181818 0% 50%); background-size: 16px 16px;' : ''}
@@ -406,8 +407,8 @@
 >
   {#if appState.crtEnabled && appState.crtCurvature > 0 && barrelMapUrl}
   <svg width="0" height="0" style="position:absolute" aria-hidden="true">
-    <filter id="crt-barrel-distort" primitiveUnits="objectBoundingBox" x="-0.1" y="-0.1" width="1.2" height="1.2">
-      <feImage href={barrelMapUrl} result="barrel-map" preserveAspectRatio="none" x="0" y="0" width="1" height="1" />
+    <filter id="crt-barrel-distort" primitiveUnits="objectBoundingBox" x="-0.15" y="-0.15" width="1.3" height="1.3">
+      <feImage href={barrelMapUrl} result="barrel-map" preserveAspectRatio="none" x="-0.15" y="-0.15" width="1.3" height="1.3" />
       <feDisplacementMap in="SourceGraphic" in2="barrel-map" scale={appState.crtCurvature * 0.001} xChannelSelector="R" yChannelSelector="G" />
     </filter>
   </svg>
