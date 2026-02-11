@@ -295,13 +295,15 @@ input[type="range"]:focus::-webkit-slider-thumb {
 /* ── CRT Monitor Effects ─────────────────────── */
 
 .crt-curvature {
-  /* Scale: 0 = flat, 100 = heavily curved CRT look */
-  --_r: calc(var(--crt-curve, 50) * 0.5px);
-  border-radius: var(--_r);
+  /* Scale: 0 = flat, 100 = heavily curved CRT bulge */
+  --_curve: var(--crt-curve, 50);
+  /* Percentage-based radius so it scales with the element size */
+  border-radius: calc(var(--_curve) * 0.2%) / calc(var(--_curve) * 0.35%);
   overflow: hidden;
-  /* Barrel-distortion illusion via inset shadow darkening the edges */
+  /* Layered inset shadows for barrel-distortion depth illusion */
   box-shadow:
-    inset 0 0 calc(var(--crt-curve, 50) * 0.6px) calc(var(--crt-curve, 50) * 0.15px) rgba(0, 0, 0, 0.4);
+    inset 0 0 calc(var(--_curve) * 1.2px) calc(var(--_curve) * 0.4px) rgba(0, 0, 0, 0.5),
+    inset 0 0 calc(var(--_curve) * 3px) calc(var(--_curve) * 0.8px) rgba(0, 0, 0, 0.25);
 }
 
 .crt-scanlines::before {
