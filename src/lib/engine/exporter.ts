@@ -1,5 +1,6 @@
 import { toPng } from 'html-to-image';
 import chroma from 'chroma-js';
+import { base } from '$app/paths';
 import type { ColoredLine } from './colorizer';
 import { appState } from '$lib/stores/state.svelte';
 
@@ -253,7 +254,7 @@ async function getWebPXMux() {
   xMuxLoading = (async () => {
     const mod = await import('webpxmux');
     const create = mod.default;
-    const inst = create('/webpxmux.wasm');
+    const inst = create(`${base}/webpxmux.wasm`);
     await inst.waitRuntime();
     xMuxInstance = inst;
     return inst;
