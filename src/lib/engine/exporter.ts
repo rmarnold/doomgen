@@ -252,12 +252,10 @@ async function getWebPXMux() {
   if (xMuxInstance) return xMuxInstance;
   if (xMuxLoading) return xMuxLoading;
   xMuxLoading = (async () => {
-    const mod = await import('webpxmux');
-    // Handle CJS interop: default might be the factory or a wrapper with .default
-    const create = typeof mod.default === 'function' ? mod.default
-      : typeof mod.default?.default === 'function' ? mod.default.default
-      : null;
-    if (!create) throw new Error(`webpxmux: unexpected module shape: ${Object.keys(mod.default ?? mod)}`);
+    // Use the browser-targeted UMD dist build (not CJS lib which pulls in Node.js 'ws' module)
+    const mod = await import('webpxmux/dist/webpxmux');
+    const create = typeof mod.default === 'function' ? mod.default : mod.default?.default;
+    if (typeof create !== 'function') throw new Error('webpxmux: failed to resolve factory function');
     const inst = create(`${base}/webpxmux.wasm`);
     await inst.waitRuntime();
     xMuxInstance = inst;
