@@ -182,33 +182,11 @@
   const hasScreenBlip = $derived(appState.crtEnabled && appState.crtScreenBlip > 0);
   const hasAnimations = $derived(hasColorShift || hasFlicker || hasScreenShake || hasPowerLoss || hasScreenBlip);
 
-  const activeEffects = $derived(() => {
-    const effects: string[] = [];
-    if (hasColorShift) effects.push('Color Shift');
-    if (hasFlicker) effects.push('CRT Flicker');
-    if (hasScreenShake) effects.push('Screen Shake');
-    if (hasPowerLoss) effects.push('Power Loss');
-    if (hasScreenBlip) effects.push('Screen Blip');
-    return effects;
-  });
-
   const btnClass = 'rounded border border-doom-surface bg-doom-black px-4 py-2 text-sm font-mono text-doom-text-muted transition-colors hover:border-doom-red hover:text-doom-text active:bg-doom-surface';
   const labelClass = 'text-[10px] font-mono uppercase tracking-widest text-doom-text-muted/50';
 </script>
 
 <div class="flex flex-col gap-3">
-  <!-- Animation notice -->
-  {#if hasAnimations}
-    <div class="flex items-start gap-2 rounded border border-doom-orange/30 bg-doom-orange/5 px-3 py-2 text-xs font-mono leading-relaxed">
-      <span class="text-doom-orange mt-0.5 shrink-0">!</span>
-      <div class="text-doom-text-muted">
-        <span class="text-doom-orange">{activeEffects().join(' + ')}</span> active —
-        PNG, WebP, and Copy Image capture a single still frame.
-        Use <strong class="text-doom-text">Animated WebP</strong>, <strong class="text-doom-text">SVG</strong>, or <strong class="text-doom-text">HTML</strong> to preserve animations.
-      </div>
-    </div>
-  {/if}
-
   <!-- Row 1: Static image exports -->
   <div class="flex flex-wrap items-center gap-3">
     <span class={labelClass} title="Static single-frame image exports">Still</span>
