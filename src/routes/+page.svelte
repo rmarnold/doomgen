@@ -119,7 +119,7 @@
     {#if styleOpen}
       <div class="mt-3 space-y-1">
         <!-- PALETTE Section -->
-        <details open class="group">
+        <details class="group">
           <summary class="flex items-center gap-1.5 cursor-pointer select-none list-none mb-1 text-[0.65rem] uppercase tracking-[0.15em] text-doom-text-muted" style="font-family: var(--font-doom-ui)">
             <svg class="w-2.5 h-2.5 transition-transform group-open:rotate-90" viewBox="0 0 12 12" fill="currentColor">
               <path d="M4 2l5 4-5 4z"/>
@@ -154,7 +154,7 @@
         </details>
 
         <!-- GRADIENT Section -->
-        <details open class="group border-t border-doom-surface/30 pt-1.5">
+        <details class="group border-t border-doom-surface/30 pt-1.5">
           <summary class="flex items-center gap-1.5 cursor-pointer select-none list-none mb-1 text-[0.65rem] uppercase tracking-[0.15em] text-doom-text-muted" style="font-family: var(--font-doom-ui)">
             <svg class="w-2.5 h-2.5 transition-transform group-open:rotate-90" viewBox="0 0 12 12" fill="currentColor">
               <path d="M4 2l5 4-5 4z"/>
