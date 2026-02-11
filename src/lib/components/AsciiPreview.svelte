@@ -348,9 +348,10 @@
         const v = (y / (size - 1)) * 2 - 1;
         const r2 = u * u + v * v;
         const i = (y * size + x) * 4;
-        img.data[i]     = Math.max(0, Math.min(255, Math.round(128 - u * k * r2 * 128)));
+        const brBoost = (u > 0 && v > 0) ? 1.3 : 1.0;
+        img.data[i]     = Math.max(0, Math.min(255, Math.round(128 - u * k * r2 * 128 * brBoost)));
         const vy = v > 0 ? v * 1.4 : v;
-        img.data[i + 1] = Math.max(0, Math.min(255, Math.round(128 + vy * k * r2 * 128)));
+        img.data[i + 1] = Math.max(0, Math.min(255, Math.round(128 + vy * k * r2 * 128 * brBoost)));
         img.data[i + 2] = 128;
         img.data[i + 3] = 255;
       }
