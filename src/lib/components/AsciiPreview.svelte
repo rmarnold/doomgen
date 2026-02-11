@@ -120,11 +120,14 @@
   function triggerShake() {
     if (!preRef) return;
     import('gsap').then(({ default: gsap }) => {
+      const el = preRef!;
       const intensity = 2 + (appState.screenShake / 100) * 8;
-      const tl = gsap.timeline();
+      const tl = gsap.timeline({
+        onComplete: () => { gsap.set(el, { clearProps: 'transform' }); },
+      });
       const offsets = [1, -0.75, 0.6, -0.4, 0.25, -0.1, 0].map(f => f * intensity);
       offsets.forEach((x, i) => {
-        tl.to(preRef!, { x, y: x * 0.5, duration: 0.05, ease: 'power1.inOut' }, i * 0.05);
+        tl.to(el, { x, y: x * 0.5, duration: 0.05, ease: 'power1.inOut' }, i * 0.05);
       });
     });
   }
@@ -152,13 +155,33 @@
   });
 
   // CRT power-loss — zigzag collapse then restore
+  // Helper: combine brightness with the element's existing filters (pixelation, drop-shadow)
+  function getBaseFilter(el: HTMLElement): string {
+    return el.style.filter?.replace(/brightness\([^)]*\)\s*/g, '').trim() || '';
+  }
+
+  function withBrightness(base: string, b: number): string {
+    return b === 1 ? base || 'none' : `${base} brightness(${b})`.trim();
+  }
+
+  // Clean up GSAP inline styles to avoid interfering with CSS animations
+  function cleanupGsap(el: HTMLElement, baseFilter: string) {
+    import('gsap').then(({ default: gsap }) => {
+      gsap.set(el, { clearProps: 'transform,opacity' });
+      el.style.filter = baseFilter;
+    });
+  }
+
   let powerLossActive = false;
   function triggerPowerLoss() {
     if (!preRef || powerLossActive) return;
     powerLossActive = true;
+    const baseFilter = getBaseFilter(preRef);
     import('gsap').then(({ default: gsap }) => {
+      const el = preRef!;
       const tl = gsap.timeline({
         onComplete: () => {
+          cleanupGsap(el, baseFilter);
           powerLossActive = false;
         },
       });
@@ -167,7 +190,7 @@
       const zigzags = 6;
       for (let i = 0; i < zigzags; i++) {
         const xOff = (i % 2 === 0 ? 1 : -1) * (8 + Math.random() * 12);
-        tl.to(preRef!, {
+        tl.to(el, {
           x: xOff,
           scaleY: 1 - (i / zigzags) * 0.3,
           duration: 0.04,
@@ -176,21 +199,21 @@
       }
 
       // Phase 2: Collapse to horizontal line with bright flash
-      tl.to(preRef!, {
+      tl.to(el, {
         scaleY: 0.01,
         x: 0,
-        filter: 'brightness(3)',
+        filter: withBrightness(baseFilter, 3),
         duration: 0.12,
         ease: 'power2.in',
       });
 
       // Phase 3: Hold the thin bright line with small zigzag
-      tl.to(preRef!, { x: 6, duration: 0.04, ease: 'none' });
-      tl.to(preRef!, { x: -4, duration: 0.04, ease: 'none' });
-      tl.to(preRef!, { x: 2, duration: 0.04, ease: 'none' });
+      tl.to(el, { x: 6, duration: 0.04, ease: 'none' });
+      tl.to(el, { x: -4, duration: 0.04, ease: 'none' });
+      tl.to(el, { x: 2, duration: 0.04, ease: 'none' });
 
       // Phase 4: Fade the line out
-      tl.to(preRef!, {
+      tl.to(el, {
         opacity: 0,
         scaleY: 0.005,
         duration: 0.15,
@@ -198,25 +221,25 @@
       });
 
       // Phase 5: Pause (screen off)
-      tl.to(preRef!, { duration: 0.3 });
+      tl.to(el, { duration: 0.3 });
 
       // Phase 6: Power back on — expand with flicker
-      tl.to(preRef!, {
+      tl.to(el, {
         scaleY: 0.01,
         opacity: 1,
-        filter: 'brightness(2.5)',
+        filter: withBrightness(baseFilter, 2.5),
         duration: 0.05,
       });
-      tl.to(preRef!, {
+      tl.to(el, {
         scaleY: 0.5,
-        filter: 'brightness(1.5)',
+        filter: withBrightness(baseFilter, 1.5),
         duration: 0.08,
         ease: 'power2.out',
       });
-      tl.to(preRef!, {
+      tl.to(el, {
         scaleY: 1,
         x: 0,
-        filter: 'brightness(1)',
+        filter: withBrightness(baseFilter, 1),
         duration: 0.15,
         ease: 'elastic.out(1, 0.5)',
       });
@@ -248,34 +271,38 @@
   // CRT screen blip — quick horizontal shift + brightness flash
   function triggerScreenBlip() {
     if (!preRef) return;
+    const baseFilter = getBaseFilter(preRef);
     import('gsap').then(({ default: gsap }) => {
+      const el = preRef!;
       const direction = Math.random() > 0.5 ? 1 : -1;
       const shiftAmount = 15 + Math.random() * 25;
-      const tl = gsap.timeline();
+      const tl = gsap.timeline({
+        onComplete: () => cleanupGsap(el, baseFilter),
+      });
 
       // Quick shift with brightness flash
-      tl.to(preRef!, {
+      tl.to(el, {
         x: direction * shiftAmount,
-        filter: 'brightness(1.6)',
+        filter: withBrightness(baseFilter, 1.6),
         duration: 0.03,
         ease: 'none',
       });
 
       // Hold shifted briefly
-      tl.to(preRef!, { duration: 0.04 + Math.random() * 0.06 });
+      tl.to(el, { duration: 0.04 + Math.random() * 0.06 });
 
       // Snap back with slight overshoot
-      tl.to(preRef!, {
+      tl.to(el, {
         x: direction * -3,
-        filter: 'brightness(1.1)',
+        filter: withBrightness(baseFilter, 1.1),
         duration: 0.03,
         ease: 'none',
       });
 
       // Settle
-      tl.to(preRef!, {
+      tl.to(el, {
         x: 0,
-        filter: 'brightness(1)',
+        filter: withBrightness(baseFilter, 1),
         duration: 0.06,
         ease: 'power2.out',
       });
