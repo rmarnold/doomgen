@@ -25,6 +25,8 @@ export interface AppState {
   crtCurvature: number;     // 0-100
   crtFlicker: number;       // 0-100
   screenShake: number;      // 0-100 (0 = off, higher = more frequent)
+  crtPowerLoss: number;     // 0-100 (0 = off, higher = more frequent)
+  crtScreenBlip: number;    // 0-100 (0 = off, higher = more frequent)
   colorShiftSpeed: number;  // 0-100 (0 = off)
   removeBlack: boolean;     // filter near-black colors from palette
 
@@ -55,6 +57,8 @@ const defaults: AppState = {
   crtCurvature: 16,
   crtFlicker: 34,
   screenShake: 0,
+  crtPowerLoss: 0,
+  crtScreenBlip: 0,
   colorShiftSpeed: 15,
   removeBlack: true,
   zoom: 100,
@@ -81,6 +85,8 @@ function createAppState() {
   let crtCurvature = $state(defaults.crtCurvature);
   let crtFlicker = $state(defaults.crtFlicker);
   let screenShake = $state(defaults.screenShake);
+  let crtPowerLoss = $state(defaults.crtPowerLoss);
+  let crtScreenBlip = $state(defaults.crtScreenBlip);
   let colorShiftSpeed = $state(defaults.colorShiftSpeed);
   let removeBlack = $state(defaults.removeBlack);
   let zoom = $state(defaults.zoom);
@@ -140,6 +146,12 @@ function createAppState() {
     get screenShake() { return screenShake; },
     set screenShake(v: number) { screenShake = v; },
 
+    get crtPowerLoss() { return crtPowerLoss; },
+    set crtPowerLoss(v: number) { crtPowerLoss = v; },
+
+    get crtScreenBlip() { return crtScreenBlip; },
+    set crtScreenBlip(v: number) { crtScreenBlip = v; },
+
     get colorShiftSpeed() { return colorShiftSpeed; },
     set colorShiftSpeed(v: number) { colorShiftSpeed = v; },
 
@@ -176,6 +188,8 @@ function createAppState() {
       crtCurvature = defaults.crtCurvature;
       crtFlicker = defaults.crtFlicker;
       screenShake = defaults.screenShake;
+      crtPowerLoss = defaults.crtPowerLoss;
+      crtScreenBlip = defaults.crtScreenBlip;
       colorShiftSpeed = defaults.colorShiftSpeed;
       removeBlack = defaults.removeBlack;
       zoom = defaults.zoom;

@@ -151,6 +151,159 @@
     return () => clearTimeout(timerId);
   });
 
+  // CRT power-loss — zigzag collapse then restore
+  let powerLossActive = false;
+  function triggerPowerLoss() {
+    if (!preRef || powerLossActive) return;
+    powerLossActive = true;
+    import('gsap').then(({ default: gsap }) => {
+      const tl = gsap.timeline({
+        onComplete: () => {
+          powerLossActive = false;
+        },
+      });
+
+      // Phase 1: Quick zigzag jitter (signal instability)
+      const zigzags = 6;
+      for (let i = 0; i < zigzags; i++) {
+        const xOff = (i % 2 === 0 ? 1 : -1) * (8 + Math.random() * 12);
+        tl.to(preRef!, {
+          x: xOff,
+          scaleY: 1 - (i / zigzags) * 0.3,
+          duration: 0.04,
+          ease: 'none',
+        });
+      }
+
+      // Phase 2: Collapse to horizontal line with bright flash
+      tl.to(preRef!, {
+        scaleY: 0.01,
+        x: 0,
+        filter: 'brightness(3)',
+        duration: 0.12,
+        ease: 'power2.in',
+      });
+
+      // Phase 3: Hold the thin bright line with small zigzag
+      tl.to(preRef!, { x: 6, duration: 0.04, ease: 'none' });
+      tl.to(preRef!, { x: -4, duration: 0.04, ease: 'none' });
+      tl.to(preRef!, { x: 2, duration: 0.04, ease: 'none' });
+
+      // Phase 4: Fade the line out
+      tl.to(preRef!, {
+        opacity: 0,
+        scaleY: 0.005,
+        duration: 0.15,
+        ease: 'power1.in',
+      });
+
+      // Phase 5: Pause (screen off)
+      tl.to(preRef!, { duration: 0.3 });
+
+      // Phase 6: Power back on — expand with flicker
+      tl.to(preRef!, {
+        scaleY: 0.01,
+        opacity: 1,
+        filter: 'brightness(2.5)',
+        duration: 0.05,
+      });
+      tl.to(preRef!, {
+        scaleY: 0.5,
+        filter: 'brightness(1.5)',
+        duration: 0.08,
+        ease: 'power2.out',
+      });
+      tl.to(preRef!, {
+        scaleY: 1,
+        x: 0,
+        filter: 'brightness(1)',
+        duration: 0.15,
+        ease: 'elastic.out(1, 0.5)',
+      });
+    });
+  }
+
+  $effect(() => {
+    const freq = appState.crtPowerLoss;
+    if (freq <= 0 || !appState.animationsEnabled) return;
+
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (prefersReducedMotion) return;
+
+    // Interval: 100 → ~3s, 1 → ~30s, with random jitter
+    const baseMs = Math.max(3000, 30000 - freq * 270);
+
+    function scheduleNext() {
+      const jitter = baseMs * (0.5 + Math.random());
+      return setTimeout(() => {
+        triggerPowerLoss();
+        timerId = scheduleNext();
+      }, jitter);
+    }
+
+    let timerId = scheduleNext();
+    return () => clearTimeout(timerId);
+  });
+
+  // CRT screen blip — quick horizontal shift + brightness flash
+  function triggerScreenBlip() {
+    if (!preRef) return;
+    import('gsap').then(({ default: gsap }) => {
+      const direction = Math.random() > 0.5 ? 1 : -1;
+      const shiftAmount = 15 + Math.random() * 25;
+      const tl = gsap.timeline();
+
+      // Quick shift with brightness flash
+      tl.to(preRef!, {
+        x: direction * shiftAmount,
+        filter: 'brightness(1.6)',
+        duration: 0.03,
+        ease: 'none',
+      });
+
+      // Hold shifted briefly
+      tl.to(preRef!, { duration: 0.04 + Math.random() * 0.06 });
+
+      // Snap back with slight overshoot
+      tl.to(preRef!, {
+        x: direction * -3,
+        filter: 'brightness(1.1)',
+        duration: 0.03,
+        ease: 'none',
+      });
+
+      // Settle
+      tl.to(preRef!, {
+        x: 0,
+        filter: 'brightness(1)',
+        duration: 0.06,
+        ease: 'power2.out',
+      });
+    });
+  }
+
+  $effect(() => {
+    const freq = appState.crtScreenBlip;
+    if (freq <= 0 || !appState.animationsEnabled) return;
+
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (prefersReducedMotion) return;
+
+    // Interval: 100 → ~1s, 1 → ~15s, with random jitter
+    const baseMs = Math.max(1000, 15000 - freq * 140);
+
+    function scheduleNext() {
+      const jitter = baseMs * (0.5 + Math.random());
+      return setTimeout(() => {
+        triggerScreenBlip();
+        timerId = scheduleNext();
+      }, jitter);
+    }
+
+    let timerId = scheduleNext();
+    return () => clearTimeout(timerId);
+  });
+
   export function getPreviewElement(): HTMLDivElement {
     return previewEl;
   }

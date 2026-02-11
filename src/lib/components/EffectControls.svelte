@@ -27,6 +27,8 @@
   const onPixelation = throttledSlider((v) => (appState.pixelation = v));
   const onCrtCurvature = throttledSlider((v) => (appState.crtCurvature = v));
   const onCrtFlicker = throttledSlider((v) => (appState.crtFlicker = v));
+  const onCrtPowerLoss = throttledSlider((v) => (appState.crtPowerLoss = v));
+  const onCrtScreenBlip = throttledSlider((v) => (appState.crtScreenBlip = v));
   const onColorShift = throttledSlider((v) => (appState.colorShiftSpeed = v));
   const onScreenShake = throttledSlider((v) => (appState.screenShake = v));
   const onZoom = throttledSlider((v) => (appState.zoom = v));
@@ -225,6 +227,20 @@
             <span class="font-mono normal-case tracking-normal">{appState.crtFlicker}%</span>
           </span>
           <input type="range" min="0" max="100" value={appState.crtFlicker} oninput={onCrtFlicker} />
+        </label>
+        <label class="block" title="Randomly simulate CRT power loss — the screen collapses into a zigzag line and powers back on. Higher values trigger more frequently">
+          <span class="mb-0.5 flex justify-between text-[0.65rem] uppercase tracking-[0.15em] text-doom-text-muted" style="font-family: var(--font-doom-ui)">
+            <span>Power Loss</span>
+            <span class="font-mono normal-case tracking-normal">{appState.crtPowerLoss === 0 ? 'Off' : `${appState.crtPowerLoss}%`}</span>
+          </span>
+          <input type="range" min="0" max="100" value={appState.crtPowerLoss} oninput={onCrtPowerLoss} />
+        </label>
+        <label class="block" title="Random horizontal screen shift with brightness flash — simulates a CRT signal glitch or interference">
+          <span class="mb-0.5 flex justify-between text-[0.65rem] uppercase tracking-[0.15em] text-doom-text-muted" style="font-family: var(--font-doom-ui)">
+            <span>Screen Blip</span>
+            <span class="font-mono normal-case tracking-normal">{appState.crtScreenBlip === 0 ? 'Off' : `${appState.crtScreenBlip}%`}</span>
+          </span>
+          <input type="range" min="0" max="100" value={appState.crtScreenBlip} oninput={onCrtScreenBlip} />
         </label>
       </div>
     {/if}
