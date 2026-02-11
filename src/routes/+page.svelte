@@ -14,6 +14,7 @@
   let asciiLines: string[] = $state([]);
   let exportColoredLines: ColoredLine[] = $state([]);
   let dimensions = $state({ width: 0, height: 0 });
+  let styleOpen = $state(true);
 
   // Debounced sync — avoid re-evaluating getters on every micro-change
   let syncRaf = 0;
@@ -99,11 +100,22 @@
 
   <!-- STYLE Section -->
   <section data-anim="style" class="metal-panel p-4">
-    <h2 class="mb-3 text-[0.65rem] uppercase tracking-[0.2em] text-doom-text-muted" style="font-family: var(--font-doom-ui)">Style</h2>
-    <div class="space-y-4">
-      <PaletteSelector />
-      <EffectControls />
-    </div>
+    <button
+      class="flex w-full items-center justify-between text-[0.65rem] uppercase tracking-[0.2em] text-doom-text-muted cursor-pointer select-none"
+      style="font-family: var(--font-doom-ui)"
+      onclick={() => (styleOpen = !styleOpen)}
+    >
+      <span>Style</span>
+      <svg class="h-3 w-3 transition-transform {styleOpen ? '' : '-rotate-90'}" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M3 4.5l3 3 3-3" stroke-linecap="round" stroke-linejoin="round" />
+      </svg>
+    </button>
+    {#if styleOpen}
+      <div class="mt-3 space-y-4">
+        <PaletteSelector />
+        <EffectControls />
+      </div>
+    {/if}
   </section>
 
   <!-- PREVIEW Section -->
