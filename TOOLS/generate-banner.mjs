@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 /**
  * Generate banner.svg from a doomgen JSON export.
+ * Includes CSS animations matching the live preview (color shift, CRT flicker).
  * Usage: node TOOLS/generate-banner.mjs path/to/export.json
  */
 import { readFileSync, writeFileSync } from 'fs';
@@ -20,6 +21,8 @@ const glowIntensity = state.glowIntensity ?? 0;
 const shadowOffset = state.shadowOffset ?? 0;
 const crtEnabled = state.crtEnabled ?? false;
 const crtCurvature = state.crtCurvature ?? 0;
+const crtFlicker = state.crtFlicker ?? 0;
+const colorShiftSpeed = state.colorShiftSpeed ?? 0;
 
 // Hellfire palette glow color
 const glowColor = '#ffff00';
@@ -72,6 +75,31 @@ const defsBlock = defs.length > 0 ? `  <defs>\n${defs.join('\n')}\n  </defs>\n` 
 const clipAttr = borderRadius > 0 ? ' clip-path="url(#clip)"' : '';
 const filterAttr = (glowIntensity > 0 || shadowOffset > 0) ? ' filter="url(#fx)"' : '';
 
+// Build CSS animations (matches preview exactly)
+const cssRules = [];
+
+// Color shift animation: hue-rotate cycle
+if (colorShiftSpeed > 0) {
+  const duration = Math.max(0.5, 10 - colorShiftSpeed * 0.095);
+  cssRules.push(`    @keyframes color-shift-cycle { from { filter: hue-rotate(0deg); } to { filter: hue-rotate(360deg); } }`);
+  cssRules.push(`    .color-shift { animation: color-shift-cycle ${duration}s linear infinite; }`);
+}
+
+// CRT flicker animation: opacity pulse
+if (crtEnabled && crtFlicker > 0) {
+  const flickerSpeed = Math.max(0.05, 0.2 - crtFlicker * 0.0015);
+  const flickerOpacity = 1 - crtFlicker * 0.003;
+  cssRules.push(`    @keyframes crt-flicker-anim { 0%, 100% { opacity: 1; } 50% { opacity: ${flickerOpacity.toFixed(3)}; } }`);
+  cssRules.push(`    .crt-flicker { animation: crt-flicker-anim ${flickerSpeed}s infinite; }`);
+}
+
+// Reduced motion support
+if (cssRules.length > 0) {
+  cssRules.push(`    @media (prefers-reduced-motion: reduce) { .color-shift, .crt-flicker { animation: none !important; } }`);
+}
+
+const styleBlock = cssRules.length > 0 ? `  <style>\n${cssRules.join('\n')}\n  </style>\n` : '';
+
 // Build text elements
 const textElements = coloredLines
   .map((line, row) => {
@@ -100,11 +128,17 @@ if (crtEnabled) {
   overlays.push(`    <rect width="${width}" height="${height}" fill="url(#vig)"/>`);
 }
 
+// Determine animation wrapper classes
+const contentClasses = [];
+if (colorShiftSpeed > 0) contentClasses.push('color-shift');
+const flickerClass = (crtEnabled && crtFlicker > 0) ? ' class="crt-flicker"' : '';
+const contentClassAttr = contentClasses.length > 0 ? ` class="${contentClasses.join(' ')}"` : '';
+
 const svg = `<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}" width="${width}" height="${height}">
-${defsBlock}  <g${clipAttr}>
+${defsBlock}${styleBlock}  <g${clipAttr}${flickerClass}>
     <rect width="100%" height="100%" fill="${bgColor}"/>
-    <g${filterAttr}>
+    <g${filterAttr}${contentClassAttr}>
 ${textElements}
     </g>
 ${overlays.length > 0 ? overlays.join('\n') + '\n' : ''}  </g>
@@ -113,3 +147,4 @@ ${overlays.length > 0 ? overlays.join('\n') + '\n' : ''}  </g>
 const outPath = resolve(process.cwd(), 'banner.svg');
 writeFileSync(outPath, svg, 'utf-8');
 console.log(`Banner written to ${outPath} (${width}x${height})`);
+console.log(`Animations: color-shift=${colorShiftSpeed > 0 ? 'on' : 'off'}, crt-flicker=${crtEnabled && crtFlicker > 0 ? 'on' : 'off'}`);
