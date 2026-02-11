@@ -115,9 +115,18 @@
         type="color"
         value={appState.bgColor}
         oninput={(e) => (appState.bgColor = (e.target as HTMLInputElement).value)}
-        class="doom-color-picker h-7 w-10 cursor-pointer rounded border border-doom-surface bg-doom-black p-0.5"
+        disabled={appState.transparentBg}
+        class="doom-color-picker h-7 w-10 cursor-pointer rounded border border-doom-surface bg-doom-black p-0.5 {appState.transparentBg ? 'opacity-40' : ''}"
       />
-      <span class="font-mono text-xs text-doom-text-muted">{appState.bgColor}</span>
+      <span class="font-mono text-xs text-doom-text-muted {appState.transparentBg ? 'opacity-40' : ''}">{appState.bgColor}</span>
+      <label class="flex items-center gap-1.5 text-xs font-mono text-doom-text-muted cursor-pointer select-none ml-1">
+        <input
+          type="checkbox"
+          bind:checked={appState.transparentBg}
+          class="accent-doom-red w-3.5 h-3.5 cursor-pointer"
+        />
+        Transparent
+      </label>
     </div>
   </div>
 

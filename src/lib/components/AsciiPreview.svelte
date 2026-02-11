@@ -155,7 +155,7 @@
   bind:this={previewEl}
   class="metal-panel-inset relative flex min-h-[250px] flex-col items-center justify-center overflow-auto p-6 sm:min-h-[350px]
     {appState.crtEnabled ? '' : 'scanlines preview-glow-border'}"
-  style="background-color: {appState.bgColor};"
+  style="background-color: {appState.transparentBg ? 'transparent' : appState.bgColor}; {appState.transparentBg ? 'background-image: repeating-conic-gradient(#222 0% 25%, #181818 0% 50%); background-size: 16px 16px;' : ''}"
 >
   {#if loading}
     <p class="animate-pulse text-doom-text-muted">Rendering...</p>
@@ -171,7 +171,7 @@
       class="relative
         {appState.crtEnabled ? 'crt-scanlines crt-phosphor crt-curvature crt-vignette' : ''}
         {appState.crtEnabled && appState.crtFlicker > 0 ? 'crt-flicker' : ''}"
-      style="background-color: {appState.bgColor}; padding: 1.5rem;
+      style="background-color: {appState.transparentBg ? 'transparent' : appState.bgColor}; padding: 1.5rem;
         {appState.crtEnabled ? `--crt-curve: ${appState.crtCurvature}; --crt-flicker-speed: ${Math.max(0.05, 0.2 - appState.crtFlicker * 0.0015)}s; --crt-flicker-opacity: ${1 - appState.crtFlicker * 0.003};` : ''}"
     >
       {#if appState.pixelation > 0}

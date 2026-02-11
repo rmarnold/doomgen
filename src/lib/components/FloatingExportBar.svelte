@@ -14,7 +14,6 @@
 
   let { getAsciiLines, getColoredLines, previewElement, filename }: Props = $props();
 
-  let transparentBg = $state(false);
   let showSuccess = $state(false);
   let successTimer: ReturnType<typeof setTimeout>;
   let animatedWebpExporting = $state(false);
@@ -38,7 +37,7 @@
   async function handleCopyImage() {
     if (!previewElement) return;
     try {
-      await copyImage(previewElement, { transparentBg, bgColor: appState.bgColor });
+      await copyImage(previewElement, { transparentBg: appState.transparentBg, bgColor: appState.bgColor });
       showFeedback();
     } catch {
       // Silent failure for floating bar
@@ -48,7 +47,7 @@
   async function handleDownloadPng() {
     if (!previewElement) return;
     try {
-      await downloadPng(previewElement, filename, { transparentBg, bgColor: appState.bgColor });
+      await downloadPng(previewElement, filename, { transparentBg: appState.transparentBg, bgColor: appState.bgColor });
       showFeedback();
     } catch {
       // Silent failure for floating bar
@@ -58,7 +57,7 @@
   async function handleDownloadWebp() {
     if (!previewElement) return;
     try {
-      await downloadWebp(previewElement, filename, { transparentBg, bgColor: appState.bgColor });
+      await downloadWebp(previewElement, filename, { transparentBg: appState.transparentBg, bgColor: appState.bgColor });
       showFeedback();
     } catch {
       // Silent failure for floating bar
@@ -77,7 +76,7 @@
           colorShiftSpeed: appState.colorShiftSpeed,
           crtEnabled: appState.crtEnabled,
           crtFlicker: appState.crtFlicker,
-          transparentBg,
+          transparentBg: appState.transparentBg,
         },
       );
       showFeedback();
@@ -175,11 +174,11 @@
 <div class="absolute top-2 right-2 hidden sm:flex gap-1.5 items-center z-10">
   <!-- Transparent Background Toggle -->
   <button
-    class="doom-btn p-1.5 {transparentBg ? 'text-doom-green border-doom-green' : ''}"
-    onclick={() => (transparentBg = !transparentBg)}
-    title={transparentBg ? 'Transparent Background: ON' : 'Transparent Background: OFF'}
+    class="doom-btn p-1.5 {appState.transparentBg ? 'text-doom-green border-doom-green' : ''}"
+    onclick={() => (appState.transparentBg = !appState.transparentBg)}
+    title={appState.transparentBg ? 'Transparent Background: ON' : 'Transparent Background: OFF'}
     aria-label="Toggle Transparent Background"
-    aria-pressed={transparentBg}
+    aria-pressed={appState.transparentBg}
   >
     <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
       <rect x="1" y="1" width="14" height="14" rx="1" stroke="currentColor" stroke-width="1.5" fill="none" />

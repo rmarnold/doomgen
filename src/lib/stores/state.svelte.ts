@@ -31,6 +31,7 @@ export interface AppState {
   // View
   zoom: number;              // 0 = auto, 25-400 = manual %
   bgColor: string;           // background hex color
+  transparentBg: boolean;    // transparent background
 
   // Animations
   animationsEnabled: boolean;
@@ -58,6 +59,7 @@ const defaults: AppState = {
   removeBlack: true,
   zoom: 100,
   bgColor: '#170808',
+  transparentBg: false,
   animationsEnabled: true,
 };
 
@@ -83,6 +85,7 @@ function createAppState() {
   let removeBlack = $state(defaults.removeBlack);
   let zoom = $state(defaults.zoom);
   let bgColor = $state(defaults.bgColor);
+  let transparentBg = $state(defaults.transparentBg);
   let animationsEnabled = $state(defaults.animationsEnabled);
 
   return {
@@ -149,6 +152,9 @@ function createAppState() {
     get bgColor() { return bgColor; },
     set bgColor(v: string) { bgColor = v; },
 
+    get transparentBg() { return transparentBg; },
+    set transparentBg(v: boolean) { transparentBg = v; },
+
     get animationsEnabled() { return animationsEnabled; },
     set animationsEnabled(v: boolean) { animationsEnabled = v; },
 
@@ -174,6 +180,7 @@ function createAppState() {
       removeBlack = defaults.removeBlack;
       zoom = defaults.zoom;
       bgColor = defaults.bgColor;
+      transparentBg = defaults.transparentBg;
       animationsEnabled = defaults.animationsEnabled;
     },
   };

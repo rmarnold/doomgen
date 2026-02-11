@@ -811,6 +811,7 @@ export function downloadJson(coloredLines: ColoredLine[], filename: string): voi
     removeBlack: appState.removeBlack,
     zoom: appState.zoom,
     bgColor: appState.bgColor,
+    transparentBg: appState.transparentBg,
     animationsEnabled: appState.animationsEnabled,
   };
 
@@ -854,6 +855,7 @@ export async function importJson(file: File): Promise<boolean> {
     if (s.removeBlack !== undefined) appState.removeBlack = s.removeBlack as boolean;
     if (s.zoom !== undefined) appState.zoom = s.zoom as number;
     if (s.bgColor !== undefined) appState.bgColor = s.bgColor as string;
+    if (s.transparentBg !== undefined) appState.transparentBg = s.transparentBg as boolean;
     if (s.animationsEnabled !== undefined) appState.animationsEnabled = s.animationsEnabled as boolean;
 
     return true;

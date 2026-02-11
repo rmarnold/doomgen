@@ -14,7 +14,6 @@
 
   let { getAsciiLines, getColoredLines, previewElement, filename }: Props = $props();
 
-  let transparentBg = $state(false);
   let feedback = $state<string | null>(null);
   let feedbackTimer: ReturnType<typeof setTimeout>;
   let animatedWebpExporting = $state(false);
@@ -38,7 +37,7 @@
   async function handleCopyImage() {
     if (!previewElement) return;
     try {
-      await copyImage(previewElement, { transparentBg, bgColor: appState.bgColor });
+      await copyImage(previewElement, { transparentBg: appState.transparentBg, bgColor: appState.bgColor });
       showFeedback('Image copied!');
     } catch {
       showFeedback('Copy failed');
@@ -48,7 +47,7 @@
   async function handleDownloadPng() {
     if (!previewElement) return;
     try {
-      await downloadPng(previewElement, filename, { transparentBg, bgColor: appState.bgColor });
+      await downloadPng(previewElement, filename, { transparentBg: appState.transparentBg, bgColor: appState.bgColor });
       showFeedback('PNG saved!');
     } catch {
       showFeedback('Download failed');
@@ -58,7 +57,7 @@
   async function handleDownloadWebp() {
     if (!previewElement) return;
     try {
-      await downloadWebp(previewElement, filename, { transparentBg, bgColor: appState.bgColor });
+      await downloadWebp(previewElement, filename, { transparentBg: appState.transparentBg, bgColor: appState.bgColor });
       showFeedback('WebP saved!');
     } catch {
       showFeedback('Download failed');
@@ -77,7 +76,7 @@
           colorShiftSpeed: appState.colorShiftSpeed,
           crtEnabled: appState.crtEnabled,
           crtFlicker: appState.crtFlicker,
-          transparentBg,
+          transparentBg: appState.transparentBg,
         },
         (frame, total) => showFeedback(`Encoding ${frame}/${total}`),
       );
@@ -201,14 +200,6 @@
   <!-- Row 1: Static image exports -->
   <div class="flex flex-wrap items-center gap-3">
     <span class={labelClass}>Still</span>
-    <label class="flex items-center gap-1.5 text-sm font-mono text-doom-text-muted cursor-pointer select-none">
-      <input
-        type="checkbox"
-        bind:checked={transparentBg}
-        class="accent-doom-red w-3.5 h-3.5 cursor-pointer"
-      />
-      Transparent
-    </label>
     <button class={btnClass} onclick={handleDownloadPng} disabled={!previewElement}>PNG</button>
     <button class={btnClass} onclick={handleDownloadWebp} disabled={!previewElement}>WebP</button>
     <button class={btnClass} onclick={handleCopyImage} disabled={!previewElement}>Copy Image</button>
