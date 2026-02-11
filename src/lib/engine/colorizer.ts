@@ -9,6 +9,13 @@ export interface ColoredChar {
 
 export type ColoredLine = ColoredChar[];
 
+export interface ColorizeOptions {
+  direction: GradientDirection;
+  normalizeBrightness?: boolean;
+  paletteStart?: number;   // 0-100
+  paletteEnd?: number;     // 0-100
+}
+
 /**
  * Apply color gradient to ASCII art lines.
  * Returns a 2D array of { char, color } objects.
@@ -16,19 +23,42 @@ export type ColoredLine = ColoredChar[];
 export function colorize(
   lines: string[],
   palette: Palette,
-  direction: GradientDirection
+  options: ColorizeOptions
 ): ColoredLine[] {
+  const { direction, normalizeBrightness = false, paletteStart = 0, paletteEnd = 100 } = options;
   const scale = chroma.scale(palette.colors).mode('oklch');
   const height = lines.length;
   const width = Math.max(...lines.map((l) => l.length));
+
+  const start = paletteStart / 100;
+  const end = paletteEnd / 100;
+  const range = end - start;
+
+  // Pre-compute target lightness for normalization (max lightness in visible range)
+  let targetL = 0;
+  if (normalizeBrightness && range > 0) {
+    for (let i = 0; i <= 10; i++) {
+      const sample = start + (i / 10) * range;
+      const [l] = scale(sample).oklch();
+      if (l > targetL) targetL = l;
+    }
+  }
 
   return lines.map((line, row) =>
     Array.from(line).map((char, col) => {
       if (char === ' ') {
         return { char, color: 'transparent' };
       }
-      const t = getGradientT(row, col, height, width, direction);
-      return { char, color: scale(t).hex() };
+      const rawT = getGradientT(row, col, height, width, direction);
+      const t = range > 0 ? start + rawT * range : start;
+      let color = scale(t);
+
+      if (normalizeBrightness && targetL > 0) {
+        const [, c, h] = color.oklch();
+        color = chroma.oklch(targetL, c, h || 0);
+      }
+
+      return { char, color: color.hex() };
     })
   );
 }

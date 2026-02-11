@@ -11,6 +11,9 @@ export interface AppState {
   // Color
   paletteId: string;
   gradientDirection: GradientDirection;
+  normalizeBrightness: boolean;
+  paletteStart: number;      // 0-100 %
+  paletteEnd: number;         // 0-100 %
 
   // Effects
   glowIntensity: number;   // 0-100
@@ -32,6 +35,9 @@ const defaults: AppState = {
   layout: 'default',
   paletteId: 'hellfire',
   gradientDirection: 'horizontal',
+  normalizeBrightness: false,
+  paletteStart: 0,
+  paletteEnd: 100,
   glowIntensity: 60,
   dripDensity: 0,
   shadowOffset: 0,
@@ -47,6 +53,9 @@ function createAppState() {
   let layout = $state<LayoutMode>(defaults.layout);
   let paletteId = $state(defaults.paletteId);
   let gradientDirection = $state<GradientDirection>(defaults.gradientDirection);
+  let normalizeBrightness = $state(defaults.normalizeBrightness);
+  let paletteStart = $state(defaults.paletteStart);
+  let paletteEnd = $state(defaults.paletteEnd);
   let glowIntensity = $state(defaults.glowIntensity);
   let dripDensity = $state(defaults.dripDensity);
   let shadowOffset = $state(defaults.shadowOffset);
@@ -70,6 +79,15 @@ function createAppState() {
 
     get gradientDirection() { return gradientDirection; },
     set gradientDirection(v: GradientDirection) { gradientDirection = v; },
+
+    get normalizeBrightness() { return normalizeBrightness; },
+    set normalizeBrightness(v: boolean) { normalizeBrightness = v; },
+
+    get paletteStart() { return paletteStart; },
+    set paletteStart(v: number) { paletteStart = v; },
+
+    get paletteEnd() { return paletteEnd; },
+    set paletteEnd(v: number) { paletteEnd = v; },
 
     get glowIntensity() { return glowIntensity; },
     set glowIntensity(v: number) { glowIntensity = v; },
@@ -98,6 +116,9 @@ function createAppState() {
       layout = defaults.layout;
       paletteId = defaults.paletteId;
       gradientDirection = defaults.gradientDirection;
+      normalizeBrightness = defaults.normalizeBrightness;
+      paletteStart = defaults.paletteStart;
+      paletteEnd = defaults.paletteEnd;
       glowIntensity = defaults.glowIntensity;
       dripDensity = defaults.dripDensity;
       shadowOffset = defaults.shadowOffset;

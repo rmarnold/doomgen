@@ -25,6 +25,8 @@
   const onShadow = throttledSlider((v) => (appState.shadowOffset = v));
   const onDistress = throttledSlider((v) => (appState.distressIntensity = v));
   const onZoom = throttledSlider((v) => (appState.zoom = v));
+  const onPaletteStart = throttledSlider((v) => (appState.paletteStart = v));
+  const onPaletteEnd = throttledSlider((v) => (appState.paletteEnd = v));
 </script>
 
 <div class="space-y-3">
@@ -41,6 +43,35 @@
         </button>
       {/each}
     </div>
+  </div>
+
+  <!-- Normalize Brightness -->
+  <label class="flex items-center gap-1.5 text-[0.65rem] uppercase tracking-[0.15em] text-doom-text-muted cursor-pointer select-none" style="font-family: var(--font-doom-ui)">
+    <input
+      type="checkbox"
+      checked={appState.normalizeBrightness}
+      onchange={() => (appState.normalizeBrightness = !appState.normalizeBrightness)}
+      class="accent-doom-red w-3.5 h-3.5 cursor-pointer"
+    />
+    Even Brightness
+  </label>
+
+  <!-- Palette Range -->
+  <div class="grid grid-cols-2 gap-3">
+    <label class="block">
+      <span class="mb-0.5 flex justify-between text-[0.65rem] uppercase tracking-[0.15em] text-doom-text-muted" style="font-family: var(--font-doom-ui)">
+        <span>Range Start</span>
+        <span class="font-mono normal-case tracking-normal">{appState.paletteStart}%</span>
+      </span>
+      <input type="range" min="0" max="100" step="5" value={appState.paletteStart} oninput={onPaletteStart} />
+    </label>
+    <label class="block">
+      <span class="mb-0.5 flex justify-between text-[0.65rem] uppercase tracking-[0.15em] text-doom-text-muted" style="font-family: var(--font-doom-ui)">
+        <span>Range End</span>
+        <span class="font-mono normal-case tracking-normal">{appState.paletteEnd}%</span>
+      </span>
+      <input type="range" min="0" max="100" step="5" value={appState.paletteEnd} oninput={onPaletteEnd} />
+    </label>
   </div>
 
   <!-- Zoom -->

@@ -65,7 +65,12 @@
     const palette = getPaletteById(appState.paletteId);
     glowColor = getGlowColor(palette);
 
-    let lines = colorize(asciiResult.lines, palette, appState.gradientDirection);
+    let lines = colorize(asciiResult.lines, palette, {
+      direction: appState.gradientDirection,
+      normalizeBrightness: appState.normalizeBrightness,
+      paletteStart: appState.paletteStart,
+      paletteEnd: appState.paletteEnd,
+    });
 
     if (appState.distressIntensity > 0) {
       lines = applyDistress(lines, appState.distressIntensity);
