@@ -337,10 +337,11 @@ export async function downloadAnimatedWebp(
     return downloadWebp(element, filename, { transparentBg, bgColor: bg });
   }
 
-  const fps = 10;
+  const maxFrames = 30;
   const totalDuration = colorShiftDuration > 0 ? colorShiftDuration : flickerDuration;
-  const frameCount = Math.ceil(totalDuration * fps);
-  const frameDurationMs = Math.round(1000 / fps);
+  const fps = Math.min(10, maxFrames / totalDuration);
+  const frameCount = Math.min(maxFrames, Math.ceil(totalDuration * fps));
+  const frameDurationMs = Math.round((totalDuration * 1000) / frameCount);
 
   // Find animation elements in the DOM
   // Structure: [data-export-target].crt-flicker > .color-shift > pre
