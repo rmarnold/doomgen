@@ -349,7 +349,7 @@
         const r2 = u * u + v * v;
         const i = (y * size + x) * 4;
         img.data[i]     = Math.max(0, Math.min(255, Math.round(128 - u * k * r2 * 128)));
-        img.data[i + 1] = Math.max(0, Math.min(255, Math.round(128 + v * k * r2 * 128)));
+        img.data[i + 1] = Math.max(0, Math.min(255, Math.round(128 - Math.abs(v) * k * r2 * 128)));
         img.data[i + 2] = 128;
         img.data[i + 3] = 255;
       }
