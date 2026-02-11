@@ -447,13 +447,16 @@ export interface SvgExportOptions {
   crtFlicker: number;
   pixelation: number;
   colorShiftSpeed: number;
+  screenShake: number;
+  crtPowerLoss: number;
+  crtScreenBlip: number;
 }
 
 /**
  * Generate and download SVG file with visual effects.
  */
 export function downloadSvg(coloredLines: ColoredLine[], filename: string, options: SvgExportOptions): void {
-  const { bgColor, glowIntensity, glowColor, shadowOffset, crtEnabled, crtCurvature, crtFlicker, pixelation, colorShiftSpeed } = options;
+  const { bgColor, glowIntensity, glowColor, shadowOffset, crtEnabled, crtCurvature, crtFlicker, pixelation, colorShiftSpeed, screenShake, crtPowerLoss, crtScreenBlip } = options;
   const lineHeight = 16;
   const charWidth = 9.6;
   const maxLineLen = coloredLines.reduce((max, l) => Math.max(max, l.length), 0);
@@ -520,24 +523,135 @@ export function downloadSvg(coloredLines: ColoredLine[], filename: string, optio
 
   // Build CSS animations
   const cssRules: string[] = [];
+  const animClasses: string[] = [];
+
   if (colorShiftSpeed > 0) {
     const duration = Math.max(0.5, 10 - colorShiftSpeed * 0.095);
     cssRules.push(`    @keyframes color-shift-cycle { from { filter: hue-rotate(0deg); } to { filter: hue-rotate(360deg); } }`);
     cssRules.push(`    .color-shift { animation: color-shift-cycle ${duration}s linear infinite; }`);
+    animClasses.push('.color-shift');
   }
+
   if (crtEnabled && crtFlicker > 0) {
     const flickerSpeed = Math.max(0.05, 0.2 - crtFlicker * 0.0015);
     const flickerOpacity = 1 - crtFlicker * 0.003;
     cssRules.push(`    @keyframes crt-flicker-anim { 0%, 100% { opacity: 1; } 50% { opacity: ${flickerOpacity.toFixed(3)}; } }`);
     cssRules.push(`    .crt-flicker { animation: crt-flicker-anim ${flickerSpeed}s infinite; }`);
+    animClasses.push('.crt-flicker');
   }
+
+  if (screenShake > 0) {
+    const interval = Math.max(500, 10000 - screenShake * 95);
+    const shakeDuration = 0.35; // 7 steps * 0.05s
+    const totalCycle = interval + shakeDuration * 1000;
+    const idleEnd = ((interval / totalCycle) * 100).toFixed(1);
+    const intensity = 2 + (screenShake / 100) * 8;
+
+    const steps = [1, -0.75, 0.6, -0.4, 0.25, -0.1, 0];
+    const stepDuration = shakeDuration / steps.length;
+    const stepPercents = steps.map((_, i) => {
+      const timeOffset = interval + i * stepDuration * 1000;
+      return ((timeOffset / totalCycle) * 100).toFixed(1);
+    });
+
+    let keyframes = `    @keyframes screen-shake {\n      0%, ${idleEnd}% { transform: translate(0, 0); }\n`;
+    steps.forEach((mult, i) => {
+      const x = (mult * intensity).toFixed(2);
+      const y = (mult * intensity * 0.5).toFixed(2);
+      keyframes += `      ${stepPercents[i]}% { transform: translate(${x}px, ${y}px); }\n`;
+    });
+    keyframes += `      100% { transform: translate(0, 0); }\n    }`;
+
+    cssRules.push(keyframes);
+    cssRules.push(`    .screen-shake { animation: screen-shake ${(totalCycle / 1000).toFixed(2)}s infinite; transform-origin: center; transform-box: fill-box; }`);
+    animClasses.push('.screen-shake');
+  }
+
+  if (crtEnabled && crtScreenBlip > 0) {
+    const interval = Math.max(1000, 15000 - crtScreenBlip * 140);
+    const blipDuration = 0.16; // ~0.03 + 0.04 + 0.03 + 0.06
+    const totalCycle = interval + blipDuration * 1000;
+    const idleEnd = ((interval / totalCycle) * 100).toFixed(1);
+
+    const p1 = (((interval + 30) / totalCycle) * 100).toFixed(1);
+    const p2 = (((interval + 70) / totalCycle) * 100).toFixed(1);
+    const p3 = (((interval + 100) / totalCycle) * 100).toFixed(1);
+
+    cssRules.push(`    @keyframes crt-screen-blip {
+      0%, ${idleEnd}% { transform: translateX(0); filter: brightness(1); }
+      ${p1}% { transform: translateX(20px); filter: brightness(1.6); }
+      ${p2}% { transform: translateX(20px); filter: brightness(1.1); }
+      ${p3}% { transform: translateX(-3px); filter: brightness(1.1); }
+      100% { transform: translateX(0); filter: brightness(1); }
+    }`);
+    cssRules.push(`    .crt-screen-blip { animation: crt-screen-blip ${(totalCycle / 1000).toFixed(2)}s infinite; transform-origin: center; transform-box: fill-box; }`);
+    animClasses.push('.crt-screen-blip');
+  }
+
+  if (crtEnabled && crtPowerLoss > 0) {
+    const interval = Math.max(3000, 30000 - crtPowerLoss * 270);
+    const powerDuration = 1.21; // Sum of all animation phases
+    const totalCycle = interval + powerDuration * 1000;
+    const idleEnd = ((interval / totalCycle) * 100).toFixed(1);
+
+    // Zigzag phase: 6 steps * 0.04s = 0.24s
+    const zigzagSteps = 6;
+    const zigzagPercents = Array.from({ length: zigzagSteps }, (_, i) => {
+      const time = interval + i * 40;
+      return ((time / totalCycle) * 100).toFixed(1);
+    });
+
+    // Collapse: 0.24s + 0.12s = 0.36s
+    const collapseTime = interval + 0.24 * 1000 + 0.12 * 1000;
+    const col = ((collapseTime / totalCycle) * 100).toFixed(1);
+
+    // Hold thin line: 3 steps * 0.04s = 0.12s
+    const h1 = (((collapseTime + 40) / totalCycle) * 100).toFixed(1);
+    const h2 = (((collapseTime + 80) / totalCycle) * 100).toFixed(1);
+    const h3 = (((collapseTime + 120) / totalCycle) * 100).toFixed(1);
+
+    // Fade out: 0.15s
+    const fadeTime = collapseTime + 0.12 * 1000 + 0.15 * 1000;
+    const fade = ((fadeTime / totalCycle) * 100).toFixed(1);
+
+    // Pause: 0.3s
+    const pauseTime = fadeTime + 0.3 * 1000;
+    const pause = ((pauseTime / totalCycle) * 100).toFixed(1);
+
+    // Restore: 3 steps (0.05s + 0.08s + 0.15s = 0.28s)
+    const r1 = (((pauseTime + 50) / totalCycle) * 100).toFixed(1);
+    const r2 = (((pauseTime + 130) / totalCycle) * 100).toFixed(1);
+
+    let keyframes = `    @keyframes crt-power-loss {\n      0%, ${idleEnd}% { transform: scaleY(1) translateX(0); filter: brightness(1); opacity: 1; }\n`;
+
+    // Zigzag jitter
+    [8, -10, 6, -8, 5, -6].forEach((x, i) => {
+      const scale = (1 - (i / zigzagSteps) * 0.3).toFixed(2);
+      keyframes += `      ${zigzagPercents[i]}% { transform: scaleY(${scale}) translateX(${x}px); }\n`;
+    });
+
+    // Collapse + hold + fade + pause
+    keyframes += `      ${col}% { transform: scaleY(0.01) translateX(0); filter: brightness(3); }\n`;
+    keyframes += `      ${h1}% { transform: scaleY(0.01) translateX(6px); filter: brightness(3); }\n`;
+    keyframes += `      ${h2}% { transform: scaleY(0.01) translateX(-4px); filter: brightness(3); }\n`;
+    keyframes += `      ${h3}% { transform: scaleY(0.01) translateX(2px); filter: brightness(3); }\n`;
+    keyframes += `      ${fade}% { opacity: 0; transform: scaleY(0.005) translateX(0); }\n`;
+    keyframes += `      ${pause}% { opacity: 0; transform: scaleY(0.005) translateX(0); }\n`;
+
+    // Restore
+    keyframes += `      ${r1}% { transform: scaleY(0.01) translateX(0); opacity: 1; filter: brightness(2.5); }\n`;
+    keyframes += `      ${r2}% { transform: scaleY(0.5) translateX(0); filter: brightness(1.5); }\n`;
+    keyframes += `      100% { transform: scaleY(1) translateX(0); filter: brightness(1); opacity: 1; }\n    }`;
+
+    cssRules.push(keyframes);
+    cssRules.push(`    .crt-power-loss { animation: crt-power-loss ${(totalCycle / 1000).toFixed(2)}s infinite; transform-origin: center; transform-box: fill-box; }`);
+    animClasses.push('.crt-power-loss');
+  }
+
   if (cssRules.length > 0) {
-    cssRules.push(`    @media (prefers-reduced-motion: reduce) { .color-shift, .crt-flicker { animation: none !important; } }`);
+    cssRules.push(`    @media (prefers-reduced-motion: reduce) { ${animClasses.join(', ')} { animation: none !important; } }`);
   }
   const styleBlock = cssRules.length > 0 ? `  <style>\n${cssRules.join('\n')}\n  </style>\n` : '';
-
-  const flickerClass = (crtEnabled && crtFlicker > 0) ? ' class="crt-flicker"' : '';
-  const contentClassAttr = colorShiftSpeed > 0 ? ' class="color-shift"' : '';
 
   // Build text elements
   const textElements = coloredLines
@@ -568,14 +682,30 @@ export function downloadSvg(coloredLines: ColoredLine[], filename: string, optio
     overlays.push(`    <rect width="${width}" height="${height}" fill="url(#vig)"/>`);
   }
 
-  // Build text content block — flicker > pixelation > glow/shadow > text
-  // Flicker wraps only the text content, NOT the background
-  let textBlock: string;
-  const innerGroup = `<g${filterAttr}${contentClassAttr}>\n${textElements}\n      </g>`;
+  // Build text content block with nested animation wrappers
+  // Nesting order (outer to inner): flicker > power-loss > screen-blip > screen-shake > pixelation > glow+colorShift > text
+  let textBlock = `<g${filterAttr}${colorShiftSpeed > 0 ? ' class="color-shift"' : ''}>\n${textElements}\n      </g>`;
+
   if (pixelation > 0) {
-    textBlock = `    <g${flickerClass}>\n      <g${pxFilterAttr}>\n        ${innerGroup}\n      </g>\n    </g>`;
+    textBlock = `<g${pxFilterAttr}>\n        ${textBlock}\n      </g>`;
+  }
+
+  if (screenShake > 0) {
+    textBlock = `<g class="screen-shake">\n      ${textBlock}\n      </g>`;
+  }
+
+  if (crtEnabled && crtScreenBlip > 0) {
+    textBlock = `<g class="crt-screen-blip">\n      ${textBlock}\n      </g>`;
+  }
+
+  if (crtEnabled && crtPowerLoss > 0) {
+    textBlock = `<g class="crt-power-loss">\n      ${textBlock}\n      </g>`;
+  }
+
+  if (crtEnabled && crtFlicker > 0) {
+    textBlock = `<g class="crt-flicker">\n      ${textBlock}\n    </g>`;
   } else {
-    textBlock = `    <g${flickerClass}>\n      ${innerGroup}\n    </g>`;
+    textBlock = `    ${textBlock}`;
   }
 
   const svg = `<?xml version="1.0" encoding="UTF-8"?>
@@ -664,13 +794,16 @@ export interface HtmlExportOptions {
   crtFlicker: number;
   pixelation: number;
   colorShiftSpeed: number;
+  screenShake: number;
+  crtPowerLoss: number;
+  crtScreenBlip: number;
 }
 
 /**
  * Generate and download self-contained HTML file with embedded CSS + JS for all effects.
  */
 export function downloadHtml(coloredLines: ColoredLine[], filename: string, options: HtmlExportOptions): void {
-  const { bgColor, glowIntensity, glowColor, shadowOffset, crtEnabled, crtCurvature, crtFlicker, pixelation, colorShiftSpeed } = options;
+  const { bgColor, glowIntensity, glowColor, shadowOffset, crtEnabled, crtCurvature, crtFlicker, pixelation, colorShiftSpeed, screenShake, crtPowerLoss, crtScreenBlip } = options;
 
   // Escape HTML title
   const safeTitle = filename.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -702,6 +835,98 @@ pre{font-family:'JetBrains Mono',monospace;font-size:14px;line-height:1;white-sp
     css += `\n.c{box-shadow:inset 0 0 80px 20px rgba(0,0,0,.5),inset 0 2px 4px rgba(0,0,0,.5)}`;
   }
 
+  // CSS Animations
+  const animClasses: string[] = [];
+
+  if (screenShake > 0) {
+    const interval = Math.max(500, 10000 - screenShake * 95);
+    const shakeDuration = 0.35;
+    const totalCycle = interval + shakeDuration * 1000;
+    const idleEnd = ((interval / totalCycle) * 100).toFixed(1);
+    const intensity = 2 + (screenShake / 100) * 8;
+
+    const steps = [1, -0.75, 0.6, -0.4, 0.25, -0.1, 0];
+    const stepDuration = shakeDuration / steps.length;
+    const stepPercents = steps.map((_, i) => {
+      const timeOffset = interval + i * stepDuration * 1000;
+      return ((timeOffset / totalCycle) * 100).toFixed(1);
+    });
+
+    let keyframes = `\n@keyframes screen-shake{0%,${idleEnd}%{transform:translate(0,0)}`;
+    steps.forEach((mult, i) => {
+      const x = (mult * intensity).toFixed(2);
+      const y = (mult * intensity * 0.5).toFixed(2);
+      keyframes += `${stepPercents[i]}%{transform:translate(${x}px,${y}px)}`;
+    });
+    keyframes += `100%{transform:translate(0,0)}}`;
+
+    css += keyframes;
+    css += `\n.shake-wrap{animation:screen-shake ${(totalCycle / 1000).toFixed(2)}s infinite;transform-origin:center}`;
+    animClasses.push('.shake-wrap');
+  }
+
+  if (crtEnabled && crtScreenBlip > 0) {
+    const interval = Math.max(1000, 15000 - crtScreenBlip * 140);
+    const blipDuration = 0.16;
+    const totalCycle = interval + blipDuration * 1000;
+    const idleEnd = ((interval / totalCycle) * 100).toFixed(1);
+
+    const p1 = (((interval + 30) / totalCycle) * 100).toFixed(1);
+    const p2 = (((interval + 70) / totalCycle) * 100).toFixed(1);
+    const p3 = (((interval + 100) / totalCycle) * 100).toFixed(1);
+
+    css += `\n@keyframes crt-screen-blip{0%,${idleEnd}%{transform:translateX(0);filter:brightness(1)}${p1}%{transform:translateX(20px);filter:brightness(1.6)}${p2}%{transform:translateX(20px);filter:brightness(1.1)}${p3}%{transform:translateX(-3px);filter:brightness(1.1)}100%{transform:translateX(0);filter:brightness(1)}}`;
+    css += `\n.blip-wrap{animation:crt-screen-blip ${(totalCycle / 1000).toFixed(2)}s infinite;transform-origin:center}`;
+    animClasses.push('.blip-wrap');
+  }
+
+  if (crtEnabled && crtPowerLoss > 0) {
+    const interval = Math.max(3000, 30000 - crtPowerLoss * 270);
+    const powerDuration = 1.21;
+    const totalCycle = interval + powerDuration * 1000;
+    const idleEnd = ((interval / totalCycle) * 100).toFixed(1);
+
+    const zigzagPercents = Array.from({ length: 6 }, (_, i) => {
+      const time = interval + i * 40;
+      return ((time / totalCycle) * 100).toFixed(1);
+    });
+
+    const collapseTime = interval + 0.24 * 1000 + 0.12 * 1000;
+    const col = ((collapseTime / totalCycle) * 100).toFixed(1);
+    const h1 = (((collapseTime + 40) / totalCycle) * 100).toFixed(1);
+    const h2 = (((collapseTime + 80) / totalCycle) * 100).toFixed(1);
+    const h3 = (((collapseTime + 120) / totalCycle) * 100).toFixed(1);
+    const fadeTime = collapseTime + 0.12 * 1000 + 0.15 * 1000;
+    const fade = ((fadeTime / totalCycle) * 100).toFixed(1);
+    const pauseTime = fadeTime + 0.3 * 1000;
+    const pause = ((pauseTime / totalCycle) * 100).toFixed(1);
+    const r1 = (((pauseTime + 50) / totalCycle) * 100).toFixed(1);
+    const r2 = (((pauseTime + 130) / totalCycle) * 100).toFixed(1);
+
+    let keyframes = `\n@keyframes crt-power-loss{0%,${idleEnd}%{transform:scaleY(1) translateX(0);filter:brightness(1);opacity:1}`;
+    [8, -10, 6, -8, 5, -6].forEach((x, i) => {
+      const scale = (1 - (i / 6) * 0.3).toFixed(2);
+      keyframes += `${zigzagPercents[i]}%{transform:scaleY(${scale}) translateX(${x}px)}`;
+    });
+    keyframes += `${col}%{transform:scaleY(0.01) translateX(0);filter:brightness(3)}`;
+    keyframes += `${h1}%{transform:scaleY(0.01) translateX(6px);filter:brightness(3)}`;
+    keyframes += `${h2}%{transform:scaleY(0.01) translateX(-4px);filter:brightness(3)}`;
+    keyframes += `${h3}%{transform:scaleY(0.01) translateX(2px);filter:brightness(3)}`;
+    keyframes += `${fade}%{opacity:0;transform:scaleY(0.005) translateX(0)}`;
+    keyframes += `${pause}%{opacity:0;transform:scaleY(0.005) translateX(0)}`;
+    keyframes += `${r1}%{transform:scaleY(0.01) translateX(0);opacity:1;filter:brightness(2.5)}`;
+    keyframes += `${r2}%{transform:scaleY(0.5) translateX(0);filter:brightness(1.5)}`;
+    keyframes += `100%{transform:scaleY(1) translateX(0);filter:brightness(1);opacity:1}}`;
+
+    css += keyframes;
+    css += `\n.power-loss-wrap{animation:crt-power-loss ${(totalCycle / 1000).toFixed(2)}s infinite;transform-origin:center}`;
+    animClasses.push('.power-loss-wrap');
+  }
+
+  if (animClasses.length > 0) {
+    css += `\n@media (prefers-reduced-motion:reduce){${animClasses.join(',')}{animation:none!important}}`;
+  }
+
   // Build character spans
   const spans = coloredLines
     .map((line) =>
@@ -723,9 +948,24 @@ pre{font-family:'JetBrains Mono',monospace;font-size:14px;line-height:1;white-sp
     ? `<svg width="0" height="0" style="position:absolute"><filter id="px"><feGaussianBlur stdDeviation="${pixelation}" in="SourceGraphic" result="b"/><feComponentTransfer in="b"><feFuncR type="discrete" tableValues="0 .1 .2 .3 .4 .5 .6 .7 .8 .9 1"/><feFuncG type="discrete" tableValues="0 .1 .2 .3 .4 .5 .6 .7 .8 .9 1"/><feFuncB type="discrete" tableValues="0 .1 .2 .3 .4 .5 .6 .7 .8 .9 1"/></feComponentTransfer></filter></svg>\n`
     : '';
 
-  // Color shift wrapper
-  const csOpen = colorShiftSpeed > 0 ? '<div id="cs">' : '';
-  const csClose = colorShiftSpeed > 0 ? '</div>' : '';
+  // Build wrapper structure (outer to inner): c > power-loss > blip > shake > color-shift > pre
+  let contentHtml = `<pre>${spans}</pre>`;
+
+  if (colorShiftSpeed > 0) {
+    contentHtml = `<div id="cs">${contentHtml}</div>`;
+  }
+
+  if (screenShake > 0) {
+    contentHtml = `<div class="shake-wrap">${contentHtml}</div>`;
+  }
+
+  if (crtEnabled && crtScreenBlip > 0) {
+    contentHtml = `<div class="blip-wrap">${contentHtml}</div>`;
+  }
+
+  if (crtEnabled && crtPowerLoss > 0) {
+    contentHtml = `<div class="power-loss-wrap">${contentHtml}</div>`;
+  }
 
   // Embedded JS for animations (color shift + CRT flicker)
   const jsConfig: Record<string, number> = {};
@@ -762,7 +1002,7 @@ c.style.opacity=o;requestAnimationFrame(fk)}requestAnimationFrame(fk);` : ''}
 </head>
 <body>
 ${pxSvg}<div class="c">
-${csOpen}<pre>${spans}</pre>${csClose}
+${contentHtml}
 </div>
 ${jsBlock}
 </body>

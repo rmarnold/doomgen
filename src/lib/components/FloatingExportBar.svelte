@@ -102,6 +102,9 @@
         crtFlicker: appState.crtFlicker,
         pixelation: appState.pixelation,
         colorShiftSpeed: appState.colorShiftSpeed,
+        screenShake: appState.screenShake,
+        crtPowerLoss: appState.crtPowerLoss,
+        crtScreenBlip: appState.crtScreenBlip,
       });
       showFeedback();
     } catch {
@@ -142,6 +145,9 @@
         crtFlicker: appState.crtFlicker,
         pixelation: appState.pixelation,
         colorShiftSpeed: appState.colorShiftSpeed,
+        screenShake: appState.screenShake,
+        crtPowerLoss: appState.crtPowerLoss,
+        crtScreenBlip: appState.crtScreenBlip,
       });
       showFeedback();
     } catch {
@@ -167,7 +173,13 @@
     input.value = '';
   }
 
-  const hasAnimations = $derived(appState.colorShiftSpeed > 0 || (appState.crtEnabled && appState.crtFlicker > 0));
+  const hasAnimations = $derived(
+    appState.colorShiftSpeed > 0 ||
+    (appState.crtEnabled && appState.crtFlicker > 0) ||
+    appState.screenShake > 0 ||
+    (appState.crtEnabled && appState.crtPowerLoss > 0) ||
+    (appState.crtEnabled && appState.crtScreenBlip > 0)
+  );
 </script>
 
 <!-- Floating Export Bar (Desktop Only) -->

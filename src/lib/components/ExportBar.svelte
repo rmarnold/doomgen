@@ -104,6 +104,9 @@
         crtFlicker: appState.crtFlicker,
         pixelation: appState.pixelation,
         colorShiftSpeed: appState.colorShiftSpeed,
+        screenShake: appState.screenShake,
+        crtPowerLoss: appState.crtPowerLoss,
+        crtScreenBlip: appState.crtScreenBlip,
       });
       showFeedback('SVG saved!');
     } catch {
@@ -144,6 +147,9 @@
         crtFlicker: appState.crtFlicker,
         pixelation: appState.pixelation,
         colorShiftSpeed: appState.colorShiftSpeed,
+        screenShake: appState.screenShake,
+        crtPowerLoss: appState.crtPowerLoss,
+        crtScreenBlip: appState.crtScreenBlip,
       });
       showFeedback('HTML saved!');
     } catch {
@@ -171,12 +177,18 @@
 
   const hasColorShift = $derived(appState.colorShiftSpeed > 0);
   const hasFlicker = $derived(appState.crtEnabled && appState.crtFlicker > 0);
-  const hasAnimations = $derived(hasColorShift || hasFlicker);
+  const hasScreenShake = $derived(appState.screenShake > 0);
+  const hasPowerLoss = $derived(appState.crtEnabled && appState.crtPowerLoss > 0);
+  const hasScreenBlip = $derived(appState.crtEnabled && appState.crtScreenBlip > 0);
+  const hasAnimations = $derived(hasColorShift || hasFlicker || hasScreenShake || hasPowerLoss || hasScreenBlip);
 
   const activeEffects = $derived(() => {
     const effects: string[] = [];
     if (hasColorShift) effects.push('Color Shift');
     if (hasFlicker) effects.push('CRT Flicker');
+    if (hasScreenShake) effects.push('Screen Shake');
+    if (hasPowerLoss) effects.push('Power Loss');
+    if (hasScreenBlip) effects.push('Screen Blip');
     return effects;
   });
 
