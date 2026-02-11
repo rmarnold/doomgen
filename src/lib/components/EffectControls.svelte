@@ -60,6 +60,17 @@
     Even Brightness
   </label>
 
+  <!-- Remove Black -->
+  <label class="flex items-center gap-1.5 text-[0.65rem] uppercase tracking-[0.15em] text-doom-text-muted cursor-pointer select-none" style="font-family: var(--font-doom-ui)">
+    <input
+      type="checkbox"
+      checked={appState.removeBlack}
+      onchange={() => (appState.removeBlack = !appState.removeBlack)}
+      class="accent-doom-red w-3.5 h-3.5 cursor-pointer"
+    />
+    Remove Black
+  </label>
+
   <!-- Palette Range -->
   <div class="grid grid-cols-2 gap-3">
     <label class="block">

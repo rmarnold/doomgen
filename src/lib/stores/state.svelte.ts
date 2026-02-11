@@ -26,6 +26,7 @@ export interface AppState {
   crtFlicker: number;       // 0-100
   screenShake: boolean;     // momentary trigger
   colorShiftSpeed: number;  // 0-100 (0 = off)
+  removeBlack: boolean;     // filter near-black colors from palette
 
   // View
   zoom: number;              // 0 = auto, 25-400 = manual %
@@ -54,6 +55,7 @@ const defaults: AppState = {
   crtFlicker: 30,
   screenShake: false,
   colorShiftSpeed: 0,
+  removeBlack: false,
   zoom: 0,
   bgColor: '#0a0a0a',
   animationsEnabled: true,
@@ -78,6 +80,7 @@ function createAppState() {
   let crtFlicker = $state(defaults.crtFlicker);
   let screenShake = $state(defaults.screenShake);
   let colorShiftSpeed = $state(defaults.colorShiftSpeed);
+  let removeBlack = $state(defaults.removeBlack);
   let zoom = $state(defaults.zoom);
   let bgColor = $state(defaults.bgColor);
   let animationsEnabled = $state(defaults.animationsEnabled);
@@ -137,6 +140,9 @@ function createAppState() {
     get colorShiftSpeed() { return colorShiftSpeed; },
     set colorShiftSpeed(v: number) { colorShiftSpeed = v; },
 
+    get removeBlack() { return removeBlack; },
+    set removeBlack(v: boolean) { removeBlack = v; },
+
     get zoom() { return zoom; },
     set zoom(v: number) { zoom = v; },
 
@@ -165,6 +171,7 @@ function createAppState() {
       crtFlicker = defaults.crtFlicker;
       screenShake = defaults.screenShake;
       colorShiftSpeed = defaults.colorShiftSpeed;
+      removeBlack = defaults.removeBlack;
       zoom = defaults.zoom;
       bgColor = defaults.bgColor;
       animationsEnabled = defaults.animationsEnabled;

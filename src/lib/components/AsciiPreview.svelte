@@ -68,6 +68,7 @@
     let lines = colorize(asciiResult.lines, palette, {
       direction: appState.gradientDirection,
       normalizeBrightness: appState.normalizeBrightness,
+      removeBlack: appState.removeBlack,
       paletteStart: appState.paletteStart,
       paletteEnd: appState.paletteEnd,
     });

@@ -12,6 +12,7 @@ export type ColoredLine = ColoredChar[];
 export interface ColorizeOptions {
   direction: GradientDirection;
   normalizeBrightness?: boolean;
+  removeBlack?: boolean;
   paletteStart?: number;   // 0-100
   paletteEnd?: number;     // 0-100
 }
@@ -25,8 +26,12 @@ export function colorize(
   palette: Palette,
   options: ColorizeOptions
 ): ColoredLine[] {
-  const { direction, normalizeBrightness = false, paletteStart = 0, paletteEnd = 100 } = options;
-  const scale = chroma.scale(palette.colors).mode('oklch');
+  const { direction, normalizeBrightness = false, removeBlack = false, paletteStart = 0, paletteEnd = 100 } = options;
+  const colors = removeBlack
+    ? palette.colors.filter((c) => chroma(c).luminance() > 0.02)
+    : palette.colors;
+  const safeColors = colors.length >= 2 ? colors : palette.colors;
+  const scale = chroma.scale(safeColors).mode('oklch');
   const height = lines.length;
   const width = Math.max(...lines.map((l) => l.length));
 
