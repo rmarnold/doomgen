@@ -93,11 +93,20 @@ export async function copyText(lines: string[]): Promise<void> {
 }
 
 /**
+ * Resolve the best capture target: prefer the inner <pre> for a tight crop,
+ * fall back to the container if no <pre> is found.
+ */
+function resolveTarget(element: HTMLElement): HTMLElement {
+  return element.querySelector('pre') ?? element;
+}
+
+/**
  * Capture preview DOM element as PNG and copy to clipboard.
  */
 export async function copyImage(element: HTMLElement, options?: PngExportOptions): Promise<void> {
   const transparent = options?.transparentBg ?? false;
-  const dataUrl = await toPng(element, {
+  const target = resolveTarget(element);
+  const dataUrl = await toPng(target, {
     pixelRatio: window.devicePixelRatio * 2,
     backgroundColor: transparent ? undefined : '#0a0a0a',
   });
@@ -113,7 +122,8 @@ export async function copyImage(element: HTMLElement, options?: PngExportOptions
  */
 export async function downloadPng(element: HTMLElement, filename: string, options?: PngExportOptions): Promise<void> {
   const transparent = options?.transparentBg ?? false;
-  const dataUrl = await toPng(element, {
+  const target = resolveTarget(element);
+  const dataUrl = await toPng(target, {
     pixelRatio: window.devicePixelRatio * 2,
     backgroundColor: transparent ? undefined : '#0a0a0a',
   });

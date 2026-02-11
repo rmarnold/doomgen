@@ -11,7 +11,6 @@
 
   let previewComponent: AsciiPreview;
   let previewElement: HTMLElement | null = $state(null);
-  let preElement: HTMLElement | null = $state(null);
   let asciiLines: string[] = $state([]);
   let exportColoredLines: ColoredLine[] = $state([]);
   let dimensions = $state({ width: 0, height: 0 });
@@ -29,7 +28,6 @@
       syncRaf = requestAnimationFrame(() => {
         if (!previewComponent) return;
         previewElement = previewComponent.getPreviewElement();
-        preElement = previewComponent.getPreElement() ?? null;
         asciiLines = previewComponent.getAsciiLines();
         exportColoredLines = previewComponent.getColoredLines();
         dimensions = previewComponent.getDimensions();
@@ -114,7 +112,6 @@
       {asciiLines}
       coloredLines={exportColoredLines}
       {previewElement}
-      {preElement}
       {filename}
     />
     <AsciiPreview bind:this={previewComponent} />
@@ -133,7 +130,6 @@
       {asciiLines}
       coloredLines={exportColoredLines}
       {previewElement}
-      {preElement}
       {filename}
     />
   </section>

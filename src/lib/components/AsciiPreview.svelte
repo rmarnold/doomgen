@@ -114,10 +114,6 @@
     return previewEl;
   }
 
-  export function getPreElement(): HTMLPreElement | undefined {
-    return preRef;
-  }
-
   export function getAsciiLines(): string[] {
     return asciiResult?.lines ?? [];
   }
