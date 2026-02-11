@@ -38,13 +38,15 @@
         const dist = Math.sqrt(dx * dx + dy * dy);
         const norm = dist / maxDist;
 
-        // Quadratic barrel: stronger push at edges
+        // Barrel distortion: edges sample from closer to center (magnify center)
+        // feDisplacementMap formula: P'(x,y) = P(x + scale*(R-0.5), y + scale*(G-0.5))
+        // To barrel-bulge: at edges, sample inward → negative offset at right edge, positive at left
         const angle = Math.atan2(dy, dx);
         const strength = norm * norm;
 
         const i = (y * size + x) * 4;
-        data[i]     = Math.round(128 + Math.cos(angle) * strength * 127); // R = X
-        data[i + 1] = Math.round(128 + Math.sin(angle) * strength * 127); // G = Y
+        data[i]     = Math.round(128 - Math.cos(angle) * strength * 127); // R = X (flipped for barrel)
+        data[i + 1] = Math.round(128 - Math.sin(angle) * strength * 127); // G = Y (flipped for barrel)
         data[i + 2] = 128;
         data[i + 3] = 255;
       }
@@ -421,9 +423,9 @@
     >
       {#if appState.crtEnabled && appState.crtCurvature > 0 && barrelMapUrl}
       <svg width="0" height="0" style="position:absolute" aria-hidden="true">
-        <filter id="crt-barrel-distort" x="-5%" y="-5%" width="110%" height="110%">
-          <feImage href={barrelMapUrl} result="barrel-map" preserveAspectRatio="none" x="0%" y="0%" width="100%" height="100%" />
-          <feDisplacementMap in="SourceGraphic" in2="barrel-map" scale={appState.crtCurvature * 0.5} xChannelSelector="R" yChannelSelector="G" />
+        <filter id="crt-barrel-distort" x="-10%" y="-10%" width="120%" height="120%">
+          <feImage href={barrelMapUrl} result="barrel-map" preserveAspectRatio="none" />
+          <feDisplacementMap in="SourceGraphic" in2="barrel-map" scale={appState.crtCurvature * 0.6} xChannelSelector="R" yChannelSelector="G" />
         </filter>
       </svg>
       {/if}
