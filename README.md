@@ -2,6 +2,10 @@
   <img src="banner.svg" alt="DOOMGEN Banner" />
 </p>
 
+<p align="center">
+  <a href="https://github.com/rmarnold/doomgen/actions/workflows/deploy.yml"><img src="https://github.com/rmarnold/doomgen/actions/workflows/deploy.yml/badge.svg" alt="Deploy to GitHub Pages" /></a>
+</p>
+
 ASCII art generator with DOOM aesthetics. Transform text into stylized ASCII art with authentic DOOM color palettes and visual effects.
 
 ## Features
@@ -10,7 +14,7 @@ ASCII art generator with DOOM aesthetics. Transform text into stylized ASCII art
 - Authentic DOOM color palettes (DOOM1, DOOM2, TNT, Plutonia)
 - Visual effects: Glow, Drip, Distress, Drop Shadow, Pixelation, CRT Monitor (scanlines, phosphor, curvature, flicker), Screen Shake, Color Shifting
 - Per-character color customization with gradient directions and brightness normalization
-- Export to PNG, SVG, ANSI, Shell Banner, HTML, and JSON (with import)
+- Export to PNG, Animated WebP, SVG, ANSI, Shell Banner, HTML, and JSON (with import)
 - Mobile-responsive design with floating export bar
 - GSAP-powered page entrance and screen shake animations
 - Accessibility: respects `prefers-reduced-motion`
