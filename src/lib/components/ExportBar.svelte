@@ -199,20 +199,20 @@
 
   <!-- Row 1: Static image exports -->
   <div class="flex flex-wrap items-center gap-3">
-    <span class={labelClass}>Still</span>
-    <button class={btnClass} onclick={handleDownloadPng} disabled={!previewElement}>PNG</button>
-    <button class={btnClass} onclick={handleDownloadWebp} disabled={!previewElement}>WebP</button>
-    <button class={btnClass} onclick={handleCopyImage} disabled={!previewElement}>Copy Image</button>
+    <span class={labelClass} title="Static single-frame image exports">Still</span>
+    <button class={btnClass} onclick={handleDownloadPng} disabled={!previewElement} title="Download as PNG — lossless static image, supports transparent background">PNG</button>
+    <button class={btnClass} onclick={handleDownloadWebp} disabled={!previewElement} title="Download as WebP — smaller file size than PNG, supports transparent background">WebP</button>
+    <button class={btnClass} onclick={handleCopyImage} disabled={!previewElement} title="Copy a static image to clipboard — paste directly into chats, docs, or editors">Copy Image</button>
   </div>
 
   <!-- Row 2: Animated exports -->
   <div class="flex flex-wrap items-center gap-3">
-    <span class={labelClass}>Animated</span>
-    <button class="{btnClass} {hasAnimations ? 'border-doom-orange/50 text-doom-orange hover:border-doom-orange' : ''}" onclick={handleDownloadAnimatedWebp} disabled={!previewElement || animatedWebpExporting || !hasAnimations}>
+    <span class={labelClass} title="Animated exports that preserve color shift and CRT flicker effects">Animated</span>
+    <button class="{btnClass} {hasAnimations ? 'border-doom-orange/50 text-doom-orange hover:border-doom-orange' : ''}" onclick={handleDownloadAnimatedWebp} disabled={!previewElement || animatedWebpExporting || !hasAnimations} title="Download as animated WebP — captures color shift and flicker as a looping animation">
       {animatedWebpExporting ? 'Exporting...' : 'Animated WebP'}
     </button>
-    <button class="{btnClass} {hasAnimations ? 'border-doom-orange/50 text-doom-orange hover:border-doom-orange' : ''}" onclick={handleDownloadSvg}>SVG</button>
-    <button class="{btnClass} {hasAnimations ? 'border-doom-orange/50 text-doom-orange hover:border-doom-orange' : ''}" onclick={handleDownloadHtml}>HTML</button>
+    <button class="{btnClass} {hasAnimations ? 'border-doom-orange/50 text-doom-orange hover:border-doom-orange' : ''}" onclick={handleDownloadSvg} title="Download as SVG — vector format with CSS animations, scalable to any size">SVG</button>
+    <button class="{btnClass} {hasAnimations ? 'border-doom-orange/50 text-doom-orange hover:border-doom-orange' : ''}" onclick={handleDownloadHtml} title="Download as HTML — self-contained page with JavaScript animations">HTML</button>
     {#if !hasAnimations}
       <span class="text-[11px] font-mono text-doom-text-muted/40 italic">No animations active</span>
     {/if}
@@ -220,14 +220,14 @@
 
   <!-- Row 3: Text + data exports -->
   <div class="flex flex-wrap items-center gap-3">
-    <span class={labelClass}>Text</span>
-    <button class={btnClass} onclick={handleCopyText}>Copy Text</button>
-    <button class={btnClass} onclick={handleDownloadAnsi}>ANSI</button>
-    <button class={btnClass} onclick={handleDownloadBanner}>Banner</button>
+    <span class={labelClass} title="Plain text and terminal-compatible exports">Text</span>
+    <button class={btnClass} onclick={handleCopyText} title="Copy plain ASCII text to clipboard — no colors, just characters">Copy Text</button>
+    <button class={btnClass} onclick={handleDownloadAnsi} title="Download as ANSI — terminal escape codes for colored text in shells">ANSI</button>
+    <button class={btnClass} onclick={handleDownloadBanner} title="Download as shell banner script — source it in .bashrc or .zshrc to display on terminal startup">Banner</button>
     <span class="text-doom-surface">|</span>
-    <span class={labelClass}>Data</span>
-    <button class={btnClass} onclick={handleDownloadJson}>JSON</button>
-    <button class={btnClass} onclick={() => fileInputEl.click()}>Import</button>
+    <span class={labelClass} title="Save and restore your settings and art as JSON presets">Data</span>
+    <button class={btnClass} onclick={handleDownloadJson} title="Download as JSON preset — saves all settings and colored text for later import">JSON</button>
+    <button class={btnClass} onclick={() => fileInputEl.click()} title="Import a previously saved JSON preset to restore settings and art">Import</button>
     <input
       bind:this={fileInputEl}
       type="file"

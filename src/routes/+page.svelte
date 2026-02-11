@@ -59,21 +59,23 @@
         placeholder="Enter text..."
         maxlength="30"
         class="doom-input w-full text-lg"
+        title="Text to render as ASCII art (max 30 characters)"
       />
       <div class="flex gap-3">
         <div class="flex-1">
-          <span class="mb-1 block text-[0.65rem] uppercase tracking-[0.2em] text-doom-text-muted" style="font-family: var(--font-doom-ui)">Font</span>
+          <span class="mb-1 block text-[0.65rem] uppercase tracking-[0.2em] text-doom-text-muted" style="font-family: var(--font-doom-ui)" title="Figlet font used to generate the ASCII art characters">Font</span>
           <FontSelector />
         </div>
         <div class="w-32 shrink-0">
-          <span class="mb-1 block text-[0.65rem] uppercase tracking-[0.2em] text-doom-text-muted" style="font-family: var(--font-doom-ui)">Layout</span>
+          <span class="mb-1 block text-[0.65rem] uppercase tracking-[0.2em] text-doom-text-muted" style="font-family: var(--font-doom-ui)" title="How Figlet arranges characters — Default uses font spacing, Full adds extra space, Fitted removes gaps">Layout</span>
           <select
             bind:value={appState.layout}
             class="doom-select w-full"
+            title="Character spacing mode"
           >
-            <option value="default">Default</option>
-            <option value="full">Full</option>
-            <option value="fitted">Fitted</option>
+            <option value="default" title="Use the font's built-in spacing">Default</option>
+            <option value="full" title="Maximum character width with extra spacing">Full</option>
+            <option value="fitted" title="Remove horizontal gaps between characters">Fitted</option>
           </select>
         </div>
       </div>
