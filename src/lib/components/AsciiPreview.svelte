@@ -130,6 +130,7 @@
 <div
   bind:this={previewEl}
   class="scanlines metal-panel-inset preview-glow-border relative flex min-h-[250px] flex-col overflow-auto p-6 sm:min-h-[350px]"
+  style="background-color: {appState.bgColor};"
 >
   {#if loading}
     <p class="animate-pulse text-doom-text-muted">Rendering...</p>
@@ -139,7 +140,7 @@
     <pre
       bind:this={preRef}
       class="whitespace-pre font-mono leading-none {appState.glowIntensity > 0 ? 'ascii-glow' : ''}"
-      style="font-size: {autoFontSize ?? 'clamp(0.45rem, 1.2vw, 0.875rem)'};{appState.shadowOffset > 0
+      style="font-size: {appState.zoom > 0 ? Math.max(4, Math.round(14 * appState.zoom / 100)) + 'px' : (autoFontSize ?? 'clamp(0.45rem, 1.2vw, 0.875rem)')};{appState.shadowOffset > 0
         ? ` filter: drop-shadow(${appState.shadowOffset}px ${appState.shadowOffset}px 0px rgba(0,0,0,0.8));`
         : ''} --glow-color: {glowColor}; --glow-intensity: {appState.glowIntensity};"
     >{#each coloredLines as line}{#each line as cell}<span

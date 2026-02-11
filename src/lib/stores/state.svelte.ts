@@ -1,6 +1,6 @@
 import type { LayoutMode } from '$lib/engine/figlet-renderer';
 
-export type GradientDirection = 'horizontal' | 'vertical' | 'diagonal' | 'radial';
+export type GradientDirection = 'none' | 'horizontal' | 'vertical' | 'diagonal' | 'radial';
 
 export interface AppState {
   // Input
@@ -18,6 +18,10 @@ export interface AppState {
   shadowOffset: number;     // 0-6
   distressIntensity: number; // 0-50
 
+  // View
+  zoom: number;              // 0 = auto, 25-400 = manual %
+  bgColor: string;           // background hex color
+
   // Animations
   animationsEnabled: boolean;
 }
@@ -32,6 +36,8 @@ const defaults: AppState = {
   dripDensity: 0,
   shadowOffset: 0,
   distressIntensity: 0,
+  zoom: 0,
+  bgColor: '#0a0a0a',
   animationsEnabled: true,
 };
 
@@ -45,6 +51,8 @@ function createAppState() {
   let dripDensity = $state(defaults.dripDensity);
   let shadowOffset = $state(defaults.shadowOffset);
   let distressIntensity = $state(defaults.distressIntensity);
+  let zoom = $state(defaults.zoom);
+  let bgColor = $state(defaults.bgColor);
   let animationsEnabled = $state(defaults.animationsEnabled);
 
   return {
@@ -75,6 +83,12 @@ function createAppState() {
     get distressIntensity() { return distressIntensity; },
     set distressIntensity(v: number) { distressIntensity = v; },
 
+    get zoom() { return zoom; },
+    set zoom(v: number) { zoom = v; },
+
+    get bgColor() { return bgColor; },
+    set bgColor(v: string) { bgColor = v; },
+
     get animationsEnabled() { return animationsEnabled; },
     set animationsEnabled(v: boolean) { animationsEnabled = v; },
 
@@ -88,6 +102,8 @@ function createAppState() {
       dripDensity = defaults.dripDensity;
       shadowOffset = defaults.shadowOffset;
       distressIntensity = defaults.distressIntensity;
+      zoom = defaults.zoom;
+      bgColor = defaults.bgColor;
       animationsEnabled = defaults.animationsEnabled;
     },
   };

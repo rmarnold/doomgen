@@ -3,6 +3,7 @@
   import type { GradientDirection } from '$lib/stores/state.svelte';
 
   const directions: { value: GradientDirection; label: string }[] = [
+    { value: 'none', label: '\u2014' },
     { value: 'horizontal', label: 'H' },
     { value: 'vertical', label: 'V' },
     { value: 'diagonal', label: 'D' },
@@ -23,6 +24,7 @@
   const onDrip = throttledSlider((v) => (appState.dripDensity = v));
   const onShadow = throttledSlider((v) => (appState.shadowOffset = v));
   const onDistress = throttledSlider((v) => (appState.distressIntensity = v));
+  const onZoom = throttledSlider((v) => (appState.zoom = v));
 </script>
 
 <div class="space-y-3">
@@ -38,6 +40,38 @@
           {dir.label}
         </button>
       {/each}
+    </div>
+  </div>
+
+  <!-- Zoom -->
+  <div>
+    <span class="mb-0.5 flex justify-between text-[0.65rem] uppercase tracking-[0.15em] text-doom-text-muted" style="font-family: var(--font-doom-ui)">
+      <span>Zoom</span>
+      <span class="flex items-center gap-1.5 font-mono normal-case tracking-normal">
+        {appState.zoom === 0 ? 'Auto' : `${appState.zoom}%`}
+        {#if appState.zoom > 0}
+          <button
+            class="inline-flex items-center justify-center w-4 h-4 rounded text-[0.6rem] leading-none border border-doom-surface text-doom-text-muted hover:border-doom-red hover:text-doom-text"
+            onclick={() => (appState.zoom = 0)}
+            title="Reset to Auto"
+          >&times;</button>
+        {/if}
+      </span>
+    </span>
+    <input type="range" min="0" max="400" step="25" value={appState.zoom} oninput={onZoom} />
+  </div>
+
+  <!-- Background Color -->
+  <div>
+    <span class="mb-1 block text-[0.65rem] uppercase tracking-[0.15em] text-doom-text-muted" style="font-family: var(--font-doom-ui)">Background</span>
+    <div class="flex items-center gap-2">
+      <input
+        type="color"
+        value={appState.bgColor}
+        oninput={(e) => (appState.bgColor = (e.target as HTMLInputElement).value)}
+        class="doom-color-picker h-7 w-10 cursor-pointer rounded border border-doom-surface bg-doom-black p-0.5"
+      />
+      <span class="font-mono text-xs text-doom-text-muted">{appState.bgColor}</span>
     </div>
   </div>
 

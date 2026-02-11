@@ -4,6 +4,7 @@ import type { ColoredLine } from './colorizer';
 
 export interface PngExportOptions {
   transparentBg?: boolean;
+  bgColor?: string;
 }
 
 /**
@@ -105,12 +106,13 @@ function resolveTarget(element: HTMLElement): HTMLElement {
  */
 export async function copyImage(element: HTMLElement, options?: PngExportOptions): Promise<void> {
   const transparent = options?.transparentBg ?? false;
+  const bg = options?.bgColor ?? '#0a0a0a';
   const target = resolveTarget(element);
   const dataUrl = await toPng(target, {
     pixelRatio: window.devicePixelRatio * 2,
-    backgroundColor: transparent ? undefined : '#0a0a0a',
+    backgroundColor: transparent ? undefined : bg,
   });
-  const cropped = await cropToContent(dataUrl, transparent ? undefined : '#0a0a0a');
+  const cropped = await cropToContent(dataUrl, transparent ? undefined : bg);
   const blob = await (await fetch(cropped)).blob();
   await navigator.clipboard.write([
     new ClipboardItem({ 'image/png': blob }),
@@ -122,12 +124,13 @@ export async function copyImage(element: HTMLElement, options?: PngExportOptions
  */
 export async function downloadPng(element: HTMLElement, filename: string, options?: PngExportOptions): Promise<void> {
   const transparent = options?.transparentBg ?? false;
+  const bg = options?.bgColor ?? '#0a0a0a';
   const target = resolveTarget(element);
   const dataUrl = await toPng(target, {
     pixelRatio: window.devicePixelRatio * 2,
-    backgroundColor: transparent ? undefined : '#0a0a0a',
+    backgroundColor: transparent ? undefined : bg,
   });
-  const cropped = await cropToContent(dataUrl, transparent ? undefined : '#0a0a0a');
+  const cropped = await cropToContent(dataUrl, transparent ? undefined : bg);
   const link = document.createElement('a');
   link.download = `${filename}.png`;
   link.href = cropped;
@@ -137,7 +140,7 @@ export async function downloadPng(element: HTMLElement, filename: string, option
 /**
  * Generate and download SVG file.
  */
-export function downloadSvg(coloredLines: ColoredLine[], filename: string): void {
+export function downloadSvg(coloredLines: ColoredLine[], filename: string, bgColor = '#0a0a0a'): void {
   const lineHeight = 16;
   const charWidth = 9.6;
   const width = Math.max(...coloredLines.map((l) => l.length)) * charWidth + 40;
@@ -164,7 +167,7 @@ export function downloadSvg(coloredLines: ColoredLine[], filename: string): void
 
   const svg = `<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}" width="${width}" height="${height}">
-  <rect width="100%" height="100%" fill="#0a0a0a"/>
+  <rect width="100%" height="100%" fill="${bgColor}"/>
   ${textElements}
 </svg>`;
 

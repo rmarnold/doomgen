@@ -41,6 +41,8 @@ function getGradientT(
   direction: GradientDirection
 ): number {
   switch (direction) {
+    case 'none':
+      return 0;
     case 'horizontal':
       return width > 1 ? col / (width - 1) : 0;
     case 'vertical':

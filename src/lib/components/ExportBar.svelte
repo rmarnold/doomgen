@@ -1,6 +1,7 @@
 <script lang="ts">
   import { copyText, copyImage, downloadPng, downloadSvg, downloadAnsi, downloadBanner } from '$lib/engine/exporter';
   import type { ColoredLine } from '$lib/engine/colorizer';
+  import { appState } from '$lib/stores/state.svelte';
 
   interface Props {
     asciiLines: string[];
@@ -33,7 +34,7 @@
   async function handleCopyImage() {
     if (!previewElement) return;
     try {
-      await copyImage(previewElement, { transparentBg });
+      await copyImage(previewElement, { transparentBg, bgColor: appState.bgColor });
       showFeedback('Image copied!');
     } catch {
       showFeedback('Copy failed');
@@ -43,7 +44,7 @@
   async function handleDownloadPng() {
     if (!previewElement) return;
     try {
-      await downloadPng(previewElement, filename, { transparentBg });
+      await downloadPng(previewElement, filename, { transparentBg, bgColor: appState.bgColor });
       showFeedback('PNG downloaded!');
     } catch {
       showFeedback('Download failed');
@@ -52,7 +53,7 @@
 
   function handleDownloadSvg() {
     try {
-      downloadSvg(coloredLines, filename);
+      downloadSvg(coloredLines, filename, appState.bgColor);
       showFeedback('SVG downloaded!');
     } catch {
       showFeedback('Download failed');
